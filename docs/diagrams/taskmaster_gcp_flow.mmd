@@ -1,0 +1,28 @@
+flowchart LR
+  U[Researcher or approved event] --> T[Trigger intake]
+  T --> R[Taskmaster router]
+  R --> Q[Durable task queue]
+  Q --> W[GroundPulse worker]
+  W --> A[Approved source adapters]
+  A --> S[(Immutable source snapshots)]
+  S --> V[Evidence validator]
+  V --> G{Evidence gate}
+  G -->|Accepted| P[Research package]
+  G -->|Unsupported or missing| H[Human review queue]
+  P --> D[Dashboard and artifact delivery]
+
+  subgraph GCP_Target[Target GCP services]
+    T
+    R
+    Q
+    W
+    S
+    V
+    P
+  end
+
+  T -. Cloud Run API .- R
+  Q -. Cloud Tasks .- W
+  S -. Cloud Storage .- V
+  R -. Pub/Sub for approved events .- Q
+  P -. Cloud Storage PDF and JSON .- D

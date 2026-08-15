@@ -1,5 +1,7 @@
 # Architecture
 
+> For the event-driven Taskmaster workflow and the rendered GCP diagram, see [Taskmaster Track Alignment](TASKMASTER_TRACK.md), [Taskmaster Operating Model](TASKMASTER_OPERATING_MODEL.md), and [`assets/diagrams/taskmaster-gcp-flow.png`](../assets/diagrams/taskmaster-gcp-flow.png).
+
 ## System intent
 
 GroundPulse is designed as an evidence-first research workflow, not as an unrestricted answer generator. The target architecture separates user intake, durable run state, background work, source adapters, evidence validation, and immutable package artifacts. This separation is essential because a research package must show what was found, what was accepted, what was derived, and what remains unavailable.
@@ -36,4 +38,4 @@ Every package statement must carry one of four states. **Source-backed** means a
 
 ## Target GCP mapping
 
-The documented target deployment uses Cloud Run for request-facing services and workers, Cloud Tasks for background orchestration, a state store for runs and evidence metadata, Cloud Storage for raw snapshots and artifacts, Pub/Sub for event distribution, and BigQuery for analytical history. This is a **target architecture**, not a claim that the repository currently deploys these services. See [GCP_REALTIME_INTEGRATION_PLAN.md](GCP_REALTIME_INTEGRATION_PLAN.md).
+The documented target deployment uses Cloud Run for request-facing services and workers, Cloud Tasks for background orchestration, a state store for runs and evidence metadata, Cloud Storage for raw snapshots and artifacts, Pub/Sub for event distribution, and BigQuery for analytical history. This is a **target architecture**, not a claim that the repository currently deploys these services. See [GCP_REALTIME_INTEGRATION_PLAN.md](GCP_REALTIME_INTEGRATION_PLAN.md) and the rendered [Taskmaster GCP diagram](../assets/diagrams/taskmaster-gcp-flow.png).

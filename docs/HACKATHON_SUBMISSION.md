@@ -12,6 +12,12 @@ Space-data research often begins across incompatible public catalogs, observatio
 
 GroundPulse models research as a controlled workflow: **frame the request → discover sources → validate evidence → build a package**. The target package contains a human-readable research brief, a claim ledger, source snapshots or links, a reproducibility manifest, and a visible list of data gaps. The interface makes validation state and uncertainty part of the product rather than hiding them behind a summary.
 
+## Taskmaster track fit
+
+GroundPulse targets the **Taskmaster** pattern: an approved trigger starts a durable research run; the coordinator routes only permitted source, validation, and package tasks; the evidence gate releases a package or creates a visible human-review task. The full target model is documented in [Taskmaster Track Alignment](TASKMASTER_TRACK.md) and [Taskmaster Operating Model](TASKMASTER_OPERATING_MODEL.md).
+
+> The repository implements the product interface and the workflow specification. Cloud triggers, source adapters, GCP workers, and live data connections are planned work, not existing hackathon claims.
+
 ## Current prototype
 
 The repository contains a static, interactive product interface with a landing page, Mission Control dashboard, Research Journal, and documentation. The dashboard demonstrates the intended controls—mission stages, source review, evidence states, gaps, package status, and new-research intake—using local presentation state. It is not connected to a live agent, cloud deployment, or real telemetry feed.
