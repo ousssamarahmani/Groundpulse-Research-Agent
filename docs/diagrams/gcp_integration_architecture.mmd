@@ -2,6 +2,7 @@
 flowchart LR
   classDef source fill:#121826,stroke:#6f8edb,color:#eef3ff,stroke-width:1px;
   classDef edge fill:#161427,stroke:#a77cff,color:#f4efff,stroke-width:1.5px;
+  classDef model fill:#201733,stroke:#c098ff,color:#f7f0ff,stroke-width:1.5px;
   classDef compute fill:#13251f,stroke:#66bd92,color:#effff6,stroke-width:1.2px;
   classDef data fill:#251b14,stroke:#d8a36b,color:#fff4e6,stroke-width:1.2px;
   classDef control fill:#202027,stroke:#a4a4b0,color:#f5f5f7,stroke-width:1px;
@@ -14,16 +15,24 @@ flowchart LR
   end
 
   subgraph I[GCP intake and event control]
-    API[Cloud Run<br/>Research API]:::edge
-    ING[Cloud Run<br/>Source / telemetry ingress]:::edge
+    API[Cloud Run<br/>Research API • HTTPS endpoint<br/>scale to zero]:::edge
+    ING[Cloud Run<br/>Source / telemetry ingress<br/>scale to zero]:::edge
     Q{{Cloud Tasks<br/>durable agent work}}:::edge
     BUS{{Pub/Sub<br/>approved events}}:::edge
   end
 
+  subgraph M[Model and agent development layer — target implementation]
+    AI[Google AI Studio<br/>prompt experiments • API keys<br/>multimodal quickstarts]:::model
+    GEM[Gemini API<br/>multimodal reasoning<br/>structured output • tool calls]:::model
+    ADK[ADK — primary framework<br/>agent workflow • tools<br/>evaluation and deployment]:::compute
+    AG[Antigravity SDK<br/>optional alternative runtime]:::optional
+    GK[Genkit<br/>optional open-source framework]:::optional
+  end
+
   subgraph A[GroundPulse research path]
-    W[Agent worker<br/>Cloud Run or Job]:::compute
+    W[Cloud Run / Cloud Run Job<br/>GroundPulse agent worker<br/>ADK target implementation]:::compute
     V[Evidence validator<br/>claim ledger gate]:::compute
-    ST[(Operational state<br/>runs • freshness • evidence)]:::control
+    FS[(Firestore<br/>run state • agent memory<br/>evidence references)]:::data
   end
 
   subgraph D[Evidence and analytics]
@@ -37,7 +46,7 @@ flowchart LR
 
   UI -->|structured request| API
   U --> API
-  API -->|create run| ST
+  API -->|create run| FS
   API --> Q
   Q --> W
   P --> ING
@@ -47,12 +56,18 @@ flowchart LR
   BUS --> BQ
   BUS -. advanced stream path .-> FLOW
   FLOW --> BQ
+  AI -. prototype / configure .-> GEM
+  ADK -->|primary model access| GEM
+  AG -. optional alternative .-> GEM
+  GK -. optional alternative .-> GEM
+  W -->|implements| ADK
+  W -->|model request| GEM
   W -->|retrieve approved context| RAW
   W -->|query context| BQ
   W --> V
-  V -->|accepted claims or explicit gap| ST
+  V -->|accepted claims or explicit gap| FS
   V --> ART
-  ST --> UI
+  FS --> UI
   ART --> UI
 
   linkStyle default stroke:#9994aa,stroke-width:1.2px;
