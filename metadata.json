@@ -1,0 +1,9 @@
+{
+  "name": "GroundPulse Research Agent",
+  "version": "0.1.0",
+  "status": "prototype",
+  "summary": "Evidence-first research-agent prototype for satellite and ground-segment questions.",
+  "primary_language": "TypeScript",
+  "license": "MIT",
+  "prototype_notice": "The repository does not include a live agent, live telemetry, a deployed GCP backend, or empirical research results."
+}

@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use GroundPulse Research Agent, please cite this repository release."
+title: "GroundPulse Research Agent"
+abstract: "An evidence-first research-agent prototype and implementation blueprint for satellite and ground-segment research questions."
+type: software
+version: 0.1.0
+date-released: 2026-08-15
+license: MIT
+authors:
+  - name: "GroundPulse Contributors"
