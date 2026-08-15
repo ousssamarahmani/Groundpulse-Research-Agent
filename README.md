@@ -39,6 +39,15 @@ Read the complete [Taskmaster track alignment](docs/TASKMASTER_TRACK.md) and [Ta
 | **New research panel** | Dashboard modal | Implemented local interaction only; it does not create a cloud job. |
 | **GCP architecture** | Documentation and diagram | Target implementation only; no cloud resources are provisioned here. |
 
+## Live UI prototype
+
+The current UI/UX prototype is externally accessible for hackathon review. These links expose the implemented frontend only; their dashboard values remain local prototype content, not a live agent or telemetry feed.
+
+| Surface | External URL |
+|---|---|
+| **Product landing page** | [groundpulse-utlcmcmd.manus.space](https://groundpulse-utlcmcmd.manus.space) |
+| **Mission Control dashboard** | [groundpulse-utlcmcmd.manus.space/dashboard](https://groundpulse-utlcmcmd.manus.space/dashboard) |
+
 ## Target GCP architecture
 
 The target deployment separates public-facing request intake, durable task dispatch, agent workers, approved source adapters, evidence validation, and immutable artifacts. Cloud Run is the target for request-facing services and agent workers; Cloud Tasks is the target queue for asynchronous work; Cloud Storage holds raw snapshots and released artifacts; Pub/Sub supports approved event distribution; BigQuery or Dataflow is added only when streaming analytics requires it. See the detailed [GCP Real-Time Integration Plan](docs/GCP_REALTIME_INTEGRATION_PLAN.md) and [Architecture](docs/ARCHITECTURE.md).
@@ -110,6 +119,7 @@ pnpm build
 |---|---|
 | [Taskmaster track alignment](docs/TASKMASTER_TRACK.md) | Explains the event-driven track fit and proof boundaries. |
 | [Taskmaster operating model](docs/TASKMASTER_OPERATING_MODEL.md) | Defines triggers, routing, evidence gates, human review, and issue discipline. |
+| [Technical Architecture Guide (DOCX)](docs/GroundPulse_Technical_Architecture_Guide_EN.docx) | Imported technical architecture reference, preserved unchanged from the supplied project documentation. |
 | [Architecture](docs/ARCHITECTURE.md) | Defines product components and target service boundaries. |
 | [GCP real-time integration plan](docs/GCP_REALTIME_INTEGRATION_PLAN.md) | Detailed GCP target design, event contract, safety, cost, and rollout. |
 | [Implementation plan](docs/IMPLEMENTATION_PLAN.md) | Milestones and release gates from prototype to verified MVP. |
