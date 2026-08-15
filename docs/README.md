@@ -10,6 +10,7 @@ This directory separates **implemented prototype documentation** from **target a
 | [Taskmaster Operating Model](TASKMASTER_OPERATING_MODEL.md) | Trigger, routing, tool, evidence-gate, and human-review model. | Target design. |
 | [Architecture](ARCHITECTURE.md) | Core component boundaries and target GCP mapping. | Target design. |
 | [GCP Real-Time Integration Plan](GCP_REALTIME_INTEGRATION_PLAN.md) | GCP services, event contract, security, observability, and rollout. | Target design. |
+| [GCP Integration Architecture Diagram](diagrams/gcp_integration_architecture.mmd) | Editable target architecture source; its rendered PNG is embedded in the GCP plan. | Target design. |
 | [Implementation Plan](IMPLEMENTATION_PLAN.md) | Milestones, workstreams, and release gates. | Planned delivery. |
 | [Task Backlog](TASKS.md) | Acceptance-oriented task IDs and their current status. | Active backlog. |
 | [Hackathon Submission](HACKATHON_SUBMISSION.md) | Problem, solution, demo path, and current boundaries. | Submission narrative. |

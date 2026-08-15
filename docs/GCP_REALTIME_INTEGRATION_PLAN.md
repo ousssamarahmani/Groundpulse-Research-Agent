@@ -28,6 +28,12 @@ The correct level of complexity depends on the feed GroundPulse actually owns or
 
 ## 3. Reference GCP architecture
 
+![Target GroundPulse GCP integration architecture](../assets/diagrams/groundpulse-gcp-integration-architecture.png)
+
+> **Target architecture, not a deployment claim.** The diagram distinguishes the implemented UI prototype from planned GCP services. The partner telemetry and advanced Dataflow paths remain optional until a source contract, schema, authorization, and end-to-end test exist.
+
+The editable Mermaid source is available at [docs/diagrams/gcp_integration_architecture.mmd](diagrams/gcp_integration_architecture.mmd). The first MVP path is **UI request → Cloud Run API → Cloud Tasks → worker → evidence validator → immutable package**; the streaming path is added only when a real source requires it.
+
 ```mermaid
 flowchart LR
   subgraph Sources[Source systems]

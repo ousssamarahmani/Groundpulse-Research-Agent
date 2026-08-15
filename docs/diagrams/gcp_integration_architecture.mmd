@@ -1,0 +1,58 @@
+%%{init: {"theme":"dark","themeVariables":{"background":"#08090f","primaryColor":"#141727","primaryTextColor":"#f2f3f7","primaryBorderColor":"#9a9ea9","lineColor":"#9a9ea9","secondaryColor":"#171b28","tertiaryColor":"#0f1119","clusterBkg":"#0d0f17","clusterBorder":"#484d5b","fontFamily":"Arial"}}}%%
+flowchart LR
+  classDef source fill:#121826,stroke:#6f8edb,color:#eef3ff,stroke-width:1px;
+  classDef edge fill:#161427,stroke:#a77cff,color:#f4efff,stroke-width:1.5px;
+  classDef compute fill:#13251f,stroke:#66bd92,color:#effff6,stroke-width:1.2px;
+  classDef data fill:#251b14,stroke:#d8a36b,color:#fff4e6,stroke-width:1.2px;
+  classDef control fill:#202027,stroke:#a4a4b0,color:#f5f5f7,stroke-width:1px;
+  classDef optional fill:#17151a,stroke:#77717f,color:#c7c2ce,stroke-dasharray: 5 4;
+
+  subgraph S[Approved source systems]
+    U[User research request]:::source
+    P[Public source adapters<br/>SatNOGS • CelesTrak • NOAA]:::source
+    T[Partner telemetry feed<br/>optional / contracted]:::optional
+  end
+
+  subgraph I[GCP intake and event control]
+    API[Cloud Run<br/>Research API]:::edge
+    ING[Cloud Run<br/>Source / telemetry ingress]:::edge
+    Q{{Cloud Tasks<br/>durable agent work}}:::edge
+    BUS{{Pub/Sub<br/>approved events}}:::edge
+  end
+
+  subgraph A[GroundPulse research path]
+    W[Agent worker<br/>Cloud Run or Job]:::compute
+    V[Evidence validator<br/>claim ledger gate]:::compute
+    ST[(Operational state<br/>runs • freshness • evidence)]:::control
+  end
+
+  subgraph D[Evidence and analytics]
+    RAW[(Cloud Storage<br/>immutable raw snapshots)]:::data
+    FLOW[Dataflow<br/>only for windowing / dedupe / enrichment]:::optional
+    BQ[(BigQuery<br/>normalized events / aggregates)]:::data
+    ART[(Cloud Storage<br/>PDF • JSON manifest • package)]:::data
+  end
+
+  UI[GroundPulse UI<br/>Landing page + Mission Control]:::control
+
+  UI -->|structured request| API
+  U --> API
+  API -->|create run| ST
+  API --> Q
+  Q --> W
+  P --> ING
+  T -. future signed feed .-> ING
+  ING --> RAW
+  ING --> BUS
+  BUS --> BQ
+  BUS -. advanced stream path .-> FLOW
+  FLOW --> BQ
+  W -->|retrieve approved context| RAW
+  W -->|query context| BQ
+  W --> V
+  V -->|accepted claims or explicit gap| ST
+  V --> ART
+  ST --> UI
+  ART --> UI
+
+  linkStyle default stroke:#9994aa,stroke-width:1.2px;
