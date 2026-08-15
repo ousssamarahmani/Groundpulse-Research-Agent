@@ -1,4 +1,12 @@
-# GroundPulse Research Agent — Hackathon Submission
+# GroundPulse Research Agent — All Things Agentic Hackathon Submission
+
+**Event:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/)
+**Selected track:** **Taskmaster**
+**Repository status:** Product UI and the Taskmaster implementation blueprint are present. Required Gemini, Google Agent Framework, and Google Cloud execution are planned work until implemented and demonstrated.
+
+## Event alignment
+
+The event requires every submission to use Gemini 3.5 or newer, at least one Google Agent Framework, and at least one Google Cloud infrastructure service. The selected Taskmaster track additionally requires a complete action-taking workflow rather than a chatbot. [1] GroundPulse is designed around that workflow—trigger, route, validate, and package—but it must complete the runtime milestones in the [implementation plan](IMPLEMENTATION_PLAN.md) before it is represented as a compliant deployed submission.
 
 ## One-line summary
 
@@ -40,3 +48,7 @@ The target service design uses a request API, durable job state, asynchronous ag
 ## What is deliberately not claimed
 
 GroundPulse does not claim live satellite telemetry, operational ground-station capability, an active GCP deployment, empirical accuracy, or a released dataset. The project labels visual dashboard values as prototype content and requires a source contract, evidence gate, and human review before any production claim.
+
+## Reference
+
+[1]: [All Things Agentic Hackathon — requirements and submission checklist](https://allthingsagentichackathon.devpost.com/)

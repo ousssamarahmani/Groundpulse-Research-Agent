@@ -5,6 +5,7 @@ This directory separates **implemented prototype documentation** from **target a
 | Document | Scope | Status |
 |---|---|---|
 | [Technical Architecture Guide (DOCX)](GroundPulse_Technical_Architecture_Guide_EN.docx) | Supplied architecture reference for GroundPulse. | Imported unchanged. |
+| [All Things Agentic Hackathon Readiness](ALL_THINGS_AGENTIC_HACKATHON.md) | Event name, Taskmaster selection, and truthful submission readiness checklist. | Current checklist. |
 | [Taskmaster Track Alignment](TASKMASTER_TRACK.md) | Event-driven track fit, target workflow, and evidence boundaries. | Target design. |
 | [Taskmaster Operating Model](TASKMASTER_OPERATING_MODEL.md) | Trigger, routing, tool, evidence-gate, and human-review model. | Target design. |
 | [Architecture](ARCHITECTURE.md) | Core component boundaries and target GCP mapping. | Target design. |

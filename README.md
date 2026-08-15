@@ -3,15 +3,20 @@
 > **An evidence-first, event-driven research coordinator for satellite and ground-segment questions.**
 
 [![Track](https://img.shields.io/badge/Track-Taskmaster-171717?style=flat-square)](docs/TASKMASTER_TRACK.md)
+[![Hackathon](https://img.shields.io/badge/All%20Things%20Agentic%20Hackathon-2026-4285F4?style=flat-square)](https://allthingsagentichackathon.devpost.com/)
 [![Prototype](https://img.shields.io/badge/Status-Prototype%20UI-5b38a9?style=flat-square)](docs/LIMITATIONS.md)
 [![GCP](https://img.shields.io/badge/Target-Google%20Cloud-4285F4?style=flat-square)](docs/GCP_REALTIME_INTEGRATION_PLAN.md)
 [![License](https://img.shields.io/badge/License-MIT-eaeaea?style=flat-square)](LICENSE)
 
 GroundPulse Research Agent is a hackathon-ready product prototype and implementation blueprint. It turns a structured space-data research question into a controlled evidence workflow: discover approved sources, validate fitness and provenance, preserve gaps, and prepare a reviewable research package. The intended output is not free-form text; it is a **Research Evidence Package** comprising a brief, claim ledger, source trail, JSON manifest, and explicit limitations.
 
+**Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/) · **Selected track:** [Taskmaster](docs/TASKMASTER_TRACK.md) · **Submission checklist:** [review here](docs/ALL_THINGS_AGENTIC_HACKATHON.md)
+
 ![GroundPulse Research Agent product preview](assets/previews/groundpulse-landing-page.png)
 
 > **Honest status:** The landing page, Mission Control dashboard, Research Journal, documentation, task system, and product assets are implemented in this repository. The event triggers, GCP services, external adapters, live telemetry, and released research packages below are target implementation work. They are **not** claimed as live capabilities.
+
+> **Hackathon readiness boundary:** The official event requires Gemini 3.5 or newer, at least one Google Agent Framework, and at least one Google Cloud infrastructure service. This repository documents the implementation path, but it must not be submitted as satisfying those runtime requirements until they are actually built and demonstrated. [1]
 
 ## Why this is a Taskmaster project
 
@@ -120,6 +125,7 @@ pnpm build
 | [Taskmaster track alignment](docs/TASKMASTER_TRACK.md) | Explains the event-driven track fit and proof boundaries. |
 | [Taskmaster operating model](docs/TASKMASTER_OPERATING_MODEL.md) | Defines triggers, routing, evidence gates, human review, and issue discipline. |
 | [Technical Architecture Guide (DOCX)](docs/GroundPulse_Technical_Architecture_Guide_EN.docx) | Imported technical architecture reference, preserved unchanged from the supplied project documentation. |
+| [All Things Agentic Hackathon Readiness](docs/ALL_THINGS_AGENTIC_HACKATHON.md) | Event name, Taskmaster selection, and truthful submission readiness checklist. |
 | [Architecture](docs/ARCHITECTURE.md) | Defines product components and target service boundaries. |
 | [GCP real-time integration plan](docs/GCP_REALTIME_INTEGRATION_PLAN.md) | Detailed GCP target design, event contract, safety, cost, and rollout. |
 | [Implementation plan](docs/IMPLEMENTATION_PLAN.md) | Milestones and release gates from prototype to verified MVP. |
@@ -139,3 +145,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), select an item from [docs/TASKS.md](doc
 ## License
 
 This repository is released under the [MIT License](LICENSE). External source data, when later integrated, retains its own license, terms, attribution, and permitted-use boundaries.
+
+## References
+
+[1]: [All Things Agentic Hackathon — Devpost](https://allthingsagentichackathon.devpost.com/)
