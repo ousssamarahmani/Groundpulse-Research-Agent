@@ -195,6 +195,10 @@ Before this plan becomes Terraform and deployed services, select the initial dat
 
 > **Recommended external positioning:** “GroundPulse is deployed on GCP for asynchronous, traceable research runs and source-freshness analytics.” Do not say “live spacecraft telemetry” until a real, owned or contracted event feed has passed an end-to-end verification test.
 
+## 10. September 1 implementation sprint
+
+The deadline-focused sequence is documented in [September 1 MVP Implementation Plan](SEPTEMBER_1_MVP_IMPLEMENTATION_PLAN.md). It uses Google AI Studio for prompt/key prototyping, Gemini API for model calls, and a time-boxed Antigravity proof before committing to a single runtime implementation. This sprint does **not** change the current target diagram or claim that Antigravity has been integrated; it records a decision gate that must be passed with an actual source-linked run before the public architecture is revised. [11] [12] [14]
+
 ## References
 
 [1]: [Google Cloud Pub/Sub overview](https://docs.cloud.google.com/pubsub/docs/overview)
