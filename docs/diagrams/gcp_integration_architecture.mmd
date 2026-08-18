@@ -24,9 +24,8 @@ flowchart LR
   subgraph M[Model and agent development layer — target implementation]
     AI[Google AI Studio<br/>prompt experiments • API keys<br/>multimodal quickstarts]:::model
     GEM[Gemini API<br/>multimodal reasoning<br/>structured output • tool calls]:::model
-    ADK[ADK — primary framework<br/>agent workflow • tools<br/>evaluation and deployment]:::compute
-    AG[Antigravity SDK<br/>optional alternative runtime]:::optional
-    GK[Genkit<br/>optional open-source framework]:::optional
+    ADK[Google ADK — primary framework<br/>tools • evaluation • deployment]:::compute
+    TEAM[ADK multi-agent team<br/>future coordinator + specialists]:::optional
   end
 
   subgraph A[GroundPulse research path]
@@ -58,9 +57,9 @@ flowchart LR
   FLOW --> BQ
   AI -. prototype / configure .-> GEM
   ADK -->|primary model access| GEM
-  AG -. optional alternative .-> GEM
-  GK -. optional alternative .-> GEM
+  TEAM -. future coordinated calls .-> GEM
   W -->|implements| ADK
+  W -. future orchestration .-> TEAM
   W -->|model request| GEM
   W -->|retrieve approved context| RAW
   W -->|query context| BQ

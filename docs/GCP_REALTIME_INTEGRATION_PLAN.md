@@ -12,7 +12,7 @@ GroundPulse should operate through two connected but logically separate paths. T
 | Decision area | Recommended approach | Reason |
 |---|---|---|
 | **Public-source freshness** | Label it **near-real-time** and expose a freshness badge. | Public providers publish at their own cadence. CelesTrak, for example, states that it checks for new GP data every two hours and asks clients not to poll more often. [9] |
-| **Model and agent framework** | Use **Gemini API** for model access, with **ADK** as the primary target framework. Use Google AI Studio for prompt/API prototyping. **Antigravity SDK** and **Genkit** are optional alternatives, not parallel MVP dependencies. | The agent implementation needs a deliberate model-to-runtime boundary; one primary framework keeps the first deployment and evaluation path reproducible. [11] [12] [13] |
+| **Model and agent framework** | Use **Gemini API** for model access, **Google AI Studio** for prompt/API prototyping, and **Google ADK** as the sole target framework. A multi-agent ADK composition is a later expansion after the single-agent evidence path is proven. | One primary framework keeps the first deployment and evaluation path reproducible; specialist agents add value only after the mandatory evidence gate is reliable. [11] [12] [13] [14] |
 | **Operational real-time** | Reserve this label for a customer-owned or partner-owned ground-station, payload, or mission feed with an explicit push contract. | This is the only case where the system can preserve an event timestamp close to the actual measurement time. |
 | **UI and mission state** | Use **Firestore** for small operational state, agent memory references, evidence links, and run status; keep raw source payloads and released artifacts immutable elsewhere. | Firestore is a managed document datastore appropriate for low-latency application state; it must not replace the raw evidence archive or analytical warehouse. [17] |
 | **Stream processing** | Start with direct analytical ingestion for independent events. Add Dataflow when event-time windows, joins, deduplication, or streaming enrichment are necessary. | Google Cloud supports direct Pub/Sub-to-BigQuery ingestion and positions Dataflow for more comprehensive streaming pipelines. [1] [5] |
@@ -31,9 +31,9 @@ The correct level of complexity depends on the feed GroundPulse actually owns or
 
 ![Target GroundPulse GCP integration architecture](../assets/diagrams/groundpulse-gcp-integration-architecture.png)
 
-> **Target architecture, not a deployment claim.** The diagram distinguishes the implemented UI prototype from planned GCP services. **Gemini API, Google AI Studio, ADK, Cloud Run, and Firestore are target MVP components.** Antigravity SDK, Genkit, partner telemetry, and advanced Dataflow are intentionally marked as optional until a technical choice, source contract, authorization, and end-to-end test exist.
+> **Target architecture, not a deployment claim.** The diagram distinguishes the implemented UI prototype from planned GCP services. **Gemini API, Google AI Studio, Google ADK, Cloud Run, and Firestore are target MVP components.** The ADK multi-agent team, partner telemetry, and advanced Dataflow paths remain future extensions until a single-agent run, source contract, authorization, and end-to-end test exist.
 
-The editable Mermaid source is available at [docs/diagrams/gcp_integration_architecture.mmd](diagrams/gcp_integration_architecture.mmd). The first MVP path is **UI request → Cloud Run API → Cloud Tasks → ADK worker on Cloud Run → Gemini API → evidence validator → immutable package**, with Firestore holding small run-state and agent-memory references. The streaming path is added only when a real source requires it.
+The editable Mermaid source is available at [docs/diagrams/gcp_integration_architecture.mmd](diagrams/gcp_integration_architecture.mmd). The first MVP path is **UI request → Cloud Run API → Cloud Tasks → Google ADK worker on Cloud Run → Gemini API → deterministic evidence validator → immutable package**, with Firestore holding small run-state and agent-memory references. An ADK coordinator-plus-specialist team is added only after this single-agent evidence path is reproducible.
 
 ```mermaid
 flowchart LR
@@ -52,9 +52,8 @@ flowchart LR
   subgraph Models[Model and agent development layer — target]
     G[Google AI Studio\nprompt experiments + API keys]
     H[Gemini API\nmultimodal reasoning + tool calls]
-    I[ADK — primary\nagent workflow + evaluation]
-    J[Antigravity SDK — optional]
-    K[Genkit — optional]
+    I[Google ADK — primary\ntools + evaluation + deployment]
+    J[ADK multi-agent team — future\ncoordinator + specialists]
   end
 
   subgraph Agent[GroundPulse research path]
@@ -81,9 +80,9 @@ flowchart LR
   F -. advanced path .-> P --> Q
   G -. prototype / configure .-> H
   I --> H
-  J -. optional alternative .-> H
-  K -. optional alternative .-> H
+  J -. future coordinated calls .-> H
   L --> I
+  L -. future orchestration .-> J
   L --> H
   L --> O
   L --> Q
@@ -93,7 +92,7 @@ flowchart LR
   R --> S
 ```
 
-Gemini API is the target model-access layer for multimodal research reasoning, structured output, and controlled tool use; Google AI Studio is the corresponding workspace for prompt experimentation, API-key management, and early prototypes. [11] [12] **ADK is GroundPulse's primary framework choice** for the first agent implementation and its evaluation/deployment workflow. [13] **Antigravity SDK** and **Genkit** remain clearly optional framework alternatives; the project will select only one runtime path for the MVP rather than combine frameworks without a tested need. [14] [15]
+Gemini API is the target model-access layer for multimodal research reasoning, structured output, and controlled tool use; Google AI Studio is the corresponding workspace for prompt experimentation, API-key management, and early prototypes. [11] [12] **Google ADK is GroundPulse's sole primary framework choice** for the first agent implementation and its evaluation/deployment workflow. [13] An ADK coordinator-plus-specialist team is a future composition pattern; it is not a connected or implemented multi-agent capability in the current prototype. [14]
 
 Pub/Sub is the event bus because it decouples event producers from consumers and distributes events asynchronously; Google describes it as a scalable messaging service for streaming analytics and service integration, with typical latency on the order of hundreds of milliseconds. [1] Cloud Run hosts the intake and Research Agent APIs as HTTPS-invocable container services; its scale-to-zero configuration is a cost-control target, not an uptime guarantee. [3] [4] [16] Cloud Tasks isolates slow or rate-limited background work from the user request path and supports authenticated HTTPS invocation with OIDC. [3]
 
@@ -151,7 +150,7 @@ For the first MVP, write simple events to BigQuery and retain raw snapshots in C
 
 The Research API receives a structured scope, object or location, time window, and decision intent. It writes the initial run-state document to **Firestore** and enqueues background work. The Cloud Run agent worker is a target deployment for the **ADK** implementation; it calls the **Gemini API** only after it has assembled a bounded, approved evidence context. **Google AI Studio** is used before deployment to prototype prompts and manage API access, rather than as a substitute for the production worker. [11] [12] [13] [17]
 
-Cloud Tasks is appropriate for rate-limiting third-party source calls, preserving queued work through incidents, and keeping slow agent operations out of a user-facing request; Google documents this pattern for private Cloud Run services with OIDC authentication. [3] Antigravity SDK and Genkit are documented optional alternatives for later comparison, but they are not presented as implemented, connected, or required for the Taskmaster MVP. [14] [15]
+Cloud Tasks is appropriate for rate-limiting third-party source calls, preserving queued work through incidents, and keeping slow agent operations out of a user-facing request; Google documents this pattern for private Cloud Run services with OIDC authentication. [3] A future ADK multi-agent composition must retain the same validator boundary: specialist work may provide evidence candidates, but a deterministic claim gate decides what is eligible for release. [14]
 
 The agent worker must not issue a final claim until the validator has accepted source-backed evidence or recorded a derivation whose inputs are retained. A completed run produces the following package.
 
@@ -197,7 +196,7 @@ Before this plan becomes Terraform and deployed services, select the initial dat
 
 ## 10. September 1 implementation sprint
 
-The deadline-focused sequence is documented in [September 1 MVP Implementation Plan](SEPTEMBER_1_MVP_IMPLEMENTATION_PLAN.md). It uses Google AI Studio for prompt/key prototyping, Gemini API for model calls, and a time-boxed Antigravity proof before committing to a single runtime implementation. This sprint does **not** change the current target diagram or claim that Antigravity has been integrated; it records a decision gate that must be passed with an actual source-linked run before the public architecture is revised. [11] [12] [14]
+The deadline-focused sequence is documented in [September 1 ADK MVP Implementation Plan](SEPTEMBER_1_MVP_IMPLEMENTATION_PLAN.md). It uses Google AI Studio for prompt/key prototyping, Gemini API for model calls, and Google ADK as the single implementation framework. The plan treats an ADK multi-agent team as a later decision gate that requires an actual source-linked run before the public architecture is expanded. [11] [12] [13] [14]
 
 ## References
 
@@ -214,7 +213,6 @@ The deadline-focused sequence is documented in [September 1 MVP Implementation P
 [11]: [Gemini API documentation](https://ai.google.dev/gemini-api/docs)
 [12]: [Google AI Studio](https://aistudio.google.com)
 [13]: [Agent Development Kit (ADK)](https://adk.dev/)
-[14]: [Google Antigravity SDK](https://antigravity.google/docs/sdk/overview)
-[15]: [Genkit overview](https://genkit.dev/docs/js/overview/)
+[14]: [Google ADK workflows](https://adk.dev/workflows/)
 [16]: [Cloud Run documentation](https://docs.cloud.google.com/run/docs)
 [17]: [Cloud Firestore documentation](https://firebase.google.com/docs/firestore)

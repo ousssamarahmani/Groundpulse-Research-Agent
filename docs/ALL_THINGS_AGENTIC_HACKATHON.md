@@ -17,7 +17,7 @@ The Taskmaster track asks for a complete workflow in which an agent takes action
 | Select one official track | **Taskmaster** is named in the README, submission document, metadata, and operating model. | Select Taskmaster in Devpost. |
 | Show an autonomous, action-taking workflow | Event routing, evidence gates, acceptance criteria, and UI flows are documented; the UI is interactive local state. | Implement and demonstrate a real trigger, worker route, adapter action, and output package. |
 | Use Gemini 3.5 or newer | No current runtime claim. | Integrate Gemini 3.5+ through Gemini API or Vertex AI and record the integration. |
-| Use a Google Agent Framework | No current runtime claim. | Implement at least one approved framework, such as ADK, GenAI SDK, Antigravity SDK, or Genkit. |
+| Use a Google Agent Framework | No current runtime claim. | Implement the selected Google ADK path with Gemini API; add the framework claim only after a verified run. |
 | Use Google Cloud infrastructure | Target GCP architecture and integration plan are documented. | Deploy and demonstrate at least one Google Cloud service, such as Cloud Run, Pub/Sub, or Firestore. |
 | Provide a code repository and architecture diagram | This repository, implementation plan, task system, GCP plan, and architecture diagram are present. | Keep the repository reproducible and align code with the deployment used in the demo. |
 | Provide a demo video | UI/UX is externally accessible; no video is included. | Record a concise, unedited demonstration showing the backend running on Google Cloud and the end-to-end Taskmaster loop. |
