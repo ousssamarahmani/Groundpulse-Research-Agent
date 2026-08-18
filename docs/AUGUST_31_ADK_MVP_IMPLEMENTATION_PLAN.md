@@ -1,7 +1,7 @@
-# GroundPulse: September 1 ADK MVP Implementation Plan
+# GroundPulse: August 31 ADK MVP Implementation Plan
 
 **Status:** Deadline-focused target plan. It is not evidence of a deployed agent, a live telemetry connection, or a completed cloud run.
-**Planning window:** August 16–September 1, 2026.
+**Planning window:** August 16–August 31, 2026.
 **Track:** All Things Agentic Hackathon — **Taskmaster**.
 
 > **MVP principle:** Build one narrow, inspectable research run with **Google ADK**, Gemini API, and Google AI Studio. The run must either return source-linked evidence with explicit gaps or fail visibly; it must never invent a telemetry value, freshness timestamp, or operational claim.
@@ -12,7 +12,7 @@ GroundPulse will use **Google AI Studio** for prompt tests, API-key management, 
 
 **Google ADK is the sole primary agent framework for this MVP.** ADK is an open-source framework for building, evaluating, and deploying agents, with documented support for tools, structured workflows, Cloud Run deployment, and multi-agent composition. [3] [4] The first deadline run stays **single-agent plus deterministic validation**. A multi-agent team is a target expansion only after that baseline passes its evidence gates.
 
-| Layer | September 1 choice | What must be proven | What must not be claimed before proof |
+| Layer | August 31 choice | What must be proven | What must not be claimed before proof |
 |---|---|---|---|
 | Prompt and model experimentation | Google AI Studio + Gemini API | A versioned prompt/test set returns schema-conformant claim entries and gaps. | That the model independently verifies factual claims. |
 | Agent implementation | Google ADK | A bounded ADK research coordinator can invoke approved tools and return the required structure. | An autonomous multi-agent fleet or unrestricted web research. |
@@ -56,13 +56,12 @@ Each day ends with a small artifact committed to GitHub or an explicit recorded 
 | **Aug 27** | Replace one Mission Control illustrative panel with backend-backed state for the verified demo run only. | UI integration branch and recording. | UI shows backend freshness fields; no invented numerical telemetry. |
 | **Aug 28** | Record the **multi-agent target design**: coordinator, source specialist, evidence validator, and artifact assembler. Implement it only if the single-agent path has passed all gates. | ADR and component contracts. | No public claim that multi-agent execution exists without a recorded run. |
 | **Aug 29** | Add source allowlist, request limits, structured logs, error states, and cost caps. | Security/cost checklist and failure-path capture. | Failure produces `failed` or `gap`, never a fabricated result. |
-| **Aug 30** | Perform and record a full dry run from request to package. | Unedited screen recording and run manifest. | A second reviewer can inspect snapshot, state, and ledger. |
-| **Aug 31** | Produce the final video, update README/Devpost, review secrets, and create release candidate. | Video draft, command list, limitations, release commit. | Every spoken claim maps to visible proof or target wording. |
-| **Sep 1** | Confirm event cutoff time, submit final links, and retain the demo environment until submission confirmation. | Receipt/screenshot, final SHA, release notes. | Do not claim submission success until the portal confirms it. |
+| **Aug 30** | Perform and record the final dry run; finish the demo video, README/Devpost draft, secret review, and release candidate. | Unedited screen recording, run manifest, video draft, and release commit. | A second reviewer can inspect snapshot, state, ledger, and every public claim. |
+| **Aug 31** | Confirm the event cutoff time, submit final links early, and retain the demo environment until submission confirmation. | Receipt/screenshot, final SHA, and release notes. | Do not claim submission success until the portal confirms it. |
 
 ## 4. Future ADK multi-agent target
 
-The execution order and scope-control rule for this plan are maintained in the companion [September 1 Priority Board](SEPTEMBER_1_PRIORITY_BOARD.md). P0 must be completed before the project begins multi-agent or streaming expansion.
+The execution order and scope-control rule for this plan are maintained in the companion [August 31 Priority Board](AUGUST_31_PRIORITY_BOARD.md). P0 must be completed before the project begins multi-agent or streaming expansion.
 
 ADK supports multi-agent and multi-node workflows, including deterministic graph workflows, collaborative coordinator patterns, and template sequence/parallel flows. [3] This capability should improve specialization—not add novelty without evidence. GroundPulse's target team is therefore deliberately small:
 

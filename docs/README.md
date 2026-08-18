@@ -11,8 +11,8 @@ This directory separates **implemented prototype documentation** from **target a
 | [Taskmaster Operating Model](TASKMASTER_OPERATING_MODEL.md) | Trigger, routing, tool, evidence-gate, and human-review model. | Target design. |
 | [Architecture](ARCHITECTURE.md) | Core component boundaries and target GCP mapping. | Target design. |
 | [GCP Real-Time Integration Plan](GCP_REALTIME_INTEGRATION_PLAN.md) | GCP services, event contract, security, observability, and rollout. | Target design. |
-| [September 1 ADK MVP Implementation Plan](SEPTEMBER_1_MVP_IMPLEMENTATION_PLAN.md) | Daily delivery plan for Google ADK, Gemini API, Google AI Studio, Cloud Run, Firestore, and the future multi-agent decision gate. | Deadline-focused target plan. |
-| [September 1 Priority Board](SEPTEMBER_1_PRIORITY_BOARD.md) | P0–P3 delivery order, completion gates, and scope-control rule for the deadline MVP. | Active execution board. |
+| [August 31 ADK MVP Implementation Plan](AUGUST_31_ADK_MVP_IMPLEMENTATION_PLAN.md) | Daily delivery plan for Google ADK, Gemini API, Google AI Studio, Cloud Run, Firestore, and the future multi-agent decision gate. | Deadline-focused target plan. |
+| [August 31 Priority Board](AUGUST_31_PRIORITY_BOARD.md) | P0–P3 delivery order, completion gates, and scope-control rule for the deadline MVP. | Active execution board. |
 | [GCP Integration Architecture Diagram](diagrams/gcp_integration_architecture.mmd) | Editable target architecture source; its rendered PNG is embedded in the GCP plan. | Target design. |
 | [Implementation Plan](IMPLEMENTATION_PLAN.md) | Milestones, workstreams, and release gates. | Planned delivery. |
 | [Task Backlog](TASKS.md) | Acceptance-oriented task IDs and their current status. | Active backlog. |

@@ -1,7 +1,7 @@
-# GroundPulse: September 1 Priority Board
+# GroundPulse: August 31 Priority Board
 
 **Status:** Deadline-focused delivery board. This is a plan, not evidence that any cloud service, ADK agent, multi-agent team, or telemetry source is currently deployed.  
-**Primary objective:** Prove one narrow, source-linked **Google ADK** research run before September 1.
+**Primary objective:** Prove one narrow, source-linked **Google ADK** research run before August 31.
 
 > **Scope-control rule:** Do not spend implementation time on additional dashboard styling, additional public sources, multi-agent orchestration, Dataflow, BigQuery, or partner telemetry until the P0 evidence path has completed one reproducible run.
 

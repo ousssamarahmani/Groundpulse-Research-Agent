@@ -194,9 +194,9 @@ Before this plan becomes Terraform and deployed services, select the initial dat
 
 > **Recommended external positioning:** “GroundPulse is deployed on GCP for asynchronous, traceable research runs and source-freshness analytics.” Do not say “live spacecraft telemetry” until a real, owned or contracted event feed has passed an end-to-end verification test.
 
-## 10. September 1 implementation sprint
+## 10. August 31 implementation sprint
 
-The deadline-focused sequence is documented in [September 1 ADK MVP Implementation Plan](SEPTEMBER_1_MVP_IMPLEMENTATION_PLAN.md). It uses Google AI Studio for prompt/key prototyping, Gemini API for model calls, and Google ADK as the single implementation framework. The plan treats an ADK multi-agent team as a later decision gate that requires an actual source-linked run before the public architecture is expanded. [11] [12] [13] [14]
+The deadline-focused sequence is documented in [August 31 ADK MVP Implementation Plan](AUGUST_31_ADK_MVP_IMPLEMENTATION_PLAN.md). It uses Google AI Studio for prompt/key prototyping, Gemini API for model calls, and Google ADK as the single implementation framework. The plan treats an ADK multi-agent team as a later decision gate that requires an actual source-linked run before the public architecture is expanded. [11] [12] [13] [14]
 
 ## References
 
