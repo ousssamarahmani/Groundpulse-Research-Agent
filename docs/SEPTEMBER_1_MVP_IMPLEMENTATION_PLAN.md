@@ -62,6 +62,8 @@ Each day ends with a small artifact committed to GitHub or an explicit recorded 
 
 ## 4. Future ADK multi-agent target
 
+The execution order and scope-control rule for this plan are maintained in the companion [September 1 Priority Board](SEPTEMBER_1_PRIORITY_BOARD.md). P0 must be completed before the project begins multi-agent or streaming expansion.
+
 ADK supports multi-agent and multi-node workflows, including deterministic graph workflows, collaborative coordinator patterns, and template sequence/parallel flows. [3] This capability should improve specialization—not add novelty without evidence. GroundPulse's target team is therefore deliberately small:
 
 | Future ADK role | Responsibility | Non-negotiable boundary |
