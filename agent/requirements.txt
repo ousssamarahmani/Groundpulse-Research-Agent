@@ -1,0 +1,6 @@
+google-adk
+google-genai
+pydantic>=2,<3
+python-dotenv
+requests
+pytest

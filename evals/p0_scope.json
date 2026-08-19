@@ -1,0 +1,31 @@
+{
+  "scope_id": "groundpulse-p0-iss-v1",
+  "question": "Given one captured CelesTrak GP/OMM record for the ISS, which orbital fields are directly present, which orbital period can be derived from the record, and which operational facts are unavailable from this source?",
+  "decision_intent": "Evidence preparation for research review",
+  "object": {
+    "name": "ISS",
+    "norad_catalog_id": "25544"
+  },
+  "approved_sources": [
+    {
+      "source_id": "celestrak_gp_25544",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON",
+      "provider": "CelesTrak",
+      "source_type": "GP/OMM orbital data"
+    }
+  ],
+  "allowed_claim_types": [
+    "source-backed",
+    "derived",
+    "gap"
+  ],
+  "non_claims": [
+    "No live telemetry",
+    "No ground-station pass prediction",
+    "No spacecraft-health assessment",
+    "No collision or safety decision",
+    "No operational recommendation"
+  ],
+  "prompt_version": "p0-ledger-v1",
+  "schema_version": "claim-ledger-v1"
+}
