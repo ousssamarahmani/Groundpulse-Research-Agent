@@ -4,3 +4,5 @@ pydantic>=2,<3
 python-dotenv
 requests
 pytest
+fastapi
+uvicorn[standard]

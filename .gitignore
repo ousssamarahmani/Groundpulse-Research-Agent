@@ -120,3 +120,5 @@ __pycache__/
 agent/.venv/
 agent/.env
 artifacts/
+data/runs/
+agent/data/runs/
