@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, ConfigDict
-
+from .repository import RunRepository
 from .local_repo import FileRunRepository
 from .local_worker import execute_local_run
 from .p1_models import ResearchRequest, ResearchRun, transition_run
@@ -13,9 +13,7 @@ app = FastAPI(
     version="p1-local-v1",
 )
 
-repository = FileRunRepository()
-
-
+repository: RunRepository = FileRunRepository()
 class CreateRunResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

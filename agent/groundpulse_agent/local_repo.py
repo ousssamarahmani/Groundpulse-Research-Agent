@@ -5,10 +5,11 @@ from threading import Lock
 from uuid import uuid4
 
 from .p1_models import ResearchRequest, ResearchRun, utc_now
+from .repository import RunRepository
 
 
-class FileRunRepository:
-    """Small local repository used before Firestore is introduced."""
+class FileRunRepository(RunRepository):
+    """Local JSON implementation of the shared run repository contract."""
 
     def __init__(self, root: Path | None = None) -> None:
         self.root = root or Path("data/runs")
@@ -30,18 +31,27 @@ class FileRunRepository:
         path = self._path(run_id)
         if not path.exists():
             return None
-        return ResearchRun.model_validate_json(path.read_text(encoding="utf-8"))
+        return ResearchRun.model_validate_json(
+            path.read_text(encoding="utf-8")
+        )
 
     def save(self, run: ResearchRun) -> ResearchRun:
         path = self._path(run.run_id)
         temporary = path.with_suffix(".tmp")
+
         with self._lock:
-            temporary.write_text(run.model_dump_json(indent=2), encoding="utf-8")
+            temporary.write_text(
+                run.model_dump_json(indent=2),
+                encoding="utf-8",
+            )
             temporary.replace(path)
+
         return run
 
     def _path(self, run_id: str) -> Path:
         safe_run_id = "".join(
-            character for character in run_id if character.isalnum() or character in "-_"
+            character
+            for character in run_id
+            if character.isalnum() or character in "-_"
         )
         return self.root / f"{safe_run_id}.json"

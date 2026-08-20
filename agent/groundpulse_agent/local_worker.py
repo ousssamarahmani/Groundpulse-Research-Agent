@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .local_repo import FileRunRepository
 from .p1_models import ResearchRun, transition_run
-
+from .repository import RunRepository
 
 AGENT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = AGENT_ROOT.parent
@@ -15,9 +15,14 @@ RUNS_ROOT = AGENT_ROOT / "data" / "runs"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "p0"
 
 
-def execute_local_run(run_id: str) -> ResearchRun:
+def execute_local_run(
+    run_id: str,
+    repository: RunRepository | None = None,
+) -> ResearchRun:
+
     """Execute one queued run through the local ADK/P0 pipeline."""
-    repository = FileRunRepository(root=RUNS_ROOT)
+    repository = repository or FileRunRepository(root=RUNS_ROOT)
+
     run = repository.get(run_id)
 
     if run is None:
