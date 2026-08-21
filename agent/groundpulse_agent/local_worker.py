@@ -4,14 +4,12 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-
-from .local_repo import FileRunRepository
+from .repository_factory import get_run_repository
 from .p1_models import ResearchRun, transition_run
 from .repository import RunRepository
 
 AGENT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = AGENT_ROOT.parent
-RUNS_ROOT = AGENT_ROOT / "data" / "runs"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "p0"
 
 
@@ -21,7 +19,7 @@ def execute_local_run(
 ) -> ResearchRun:
 
     """Execute one queued run through the local ADK/P0 pipeline."""
-    repository = repository or FileRunRepository(root=RUNS_ROOT)
+    repository = repository or get_run_repository()
 
     run = repository.get(run_id)
 
