@@ -1,10 +1,13 @@
 from __future__ import annotations
-from .repository_factory import get_run_repository
+
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, ConfigDict
-from .repository import RunRepository
+
+from .local_queue import LocalTaskQueue
 from .local_worker import execute_local_run
 from .p1_models import ResearchRequest, ResearchRun, transition_run
+from .repository import RunRepository
+from .repository_factory import get_run_repository
 
 
 app = FastAPI(
@@ -13,6 +16,8 @@ app = FastAPI(
 )
 
 repository: RunRepository = get_run_repository()
+task_queue = LocalTaskQueue()
+
 
 class CreateRunResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -20,6 +25,8 @@ class CreateRunResponse(BaseModel):
     run_id: str
     status: str
     status_url: str
+    task_id: str
+    reused: bool
 
 
 @app.get("/health")
@@ -38,15 +45,32 @@ def health() -> dict[str, str]:
     name="create_run",
 )
 def create_run(request: ResearchRequest) -> CreateRunResponse:
-    """Validate a bounded request, create a run, and queue it locally."""
+    """Create or reuse a run using the request idempotency key."""
+    existing = repository.get_by_idempotency_key(
+        request.idempotency_key
+    )
+
+    if existing is not None:
+        task = task_queue.enqueue_for_run(existing.run_id)
+        return CreateRunResponse(
+            run_id=existing.run_id,
+            status=existing.status,
+            status_url=f"/runs/{existing.run_id}",
+            task_id=task.task_id,
+            reused=True,
+        )
+
     run = repository.create(request)
     queued = transition_run(run, "queued")
     repository.save(queued)
+    task = task_queue.enqueue_for_run(queued.run_id)
 
     return CreateRunResponse(
         run_id=queued.run_id,
         status=queued.status,
         status_url=f"/runs/{queued.run_id}",
+        task_id=task.task_id,
+        reused=False,
     )
 
 
@@ -56,7 +80,7 @@ def create_run(request: ResearchRequest) -> CreateRunResponse:
     name="get_run",
 )
 def get_run(run_id: str) -> ResearchRun:
-    """Return a persisted local run by ID."""
+    """Return a persisted run by ID."""
     run = repository.get(run_id)
 
     if run is None:

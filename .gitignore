@@ -122,3 +122,4 @@ agent/.env
 artifacts/
 data/runs/
 agent/data/runs/
+agent/data/tasks/

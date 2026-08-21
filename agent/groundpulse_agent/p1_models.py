@@ -44,6 +44,7 @@ class ResearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal["research-request.v1"] = "research-request.v1"
+    idempotency_key: str = Field(min_length=8, max_length=128)
     question: str = Field(min_length=20, max_length=2000)
     decision_intent: str = Field(min_length=3, max_length=500)
     object: RequestObject

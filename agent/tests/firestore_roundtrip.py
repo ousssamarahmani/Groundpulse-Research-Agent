@@ -10,6 +10,7 @@ PROJECT_ID = "gen-lang-client-0100610229"
 def make_request() -> ResearchRequest:
     return ResearchRequest.model_validate(
         {
+            "idempotency_key": "firestore-roundtrip-001",
             "question": (
                 "Given one approved CelesTrak GP snapshot for the ISS, "
                 "what is source-backed and what is unavailable?"
@@ -48,12 +49,16 @@ def main() -> None:
                 f"Expected queued status, got {recovered.status}"
             )
 
+        if recovered.request.idempotency_key != "firestore-roundtrip-001":
+            raise RuntimeError("Idempotency key did not round-trip correctly")
+
         print("Firestore round trip passed")
         print("Project:", PROJECT_ID)
         print("Collection:", repository.collection)
         print("Run ID:", recovered.run_id)
         print("Status:", recovered.status)
         print("Object:", recovered.request.object.name)
+        print("Idempotency key:", recovered.request.idempotency_key)
 
     finally:
         repository._document(run_id).delete()

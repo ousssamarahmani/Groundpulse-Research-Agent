@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+from uuid import uuid4
 
 from google.cloud import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 from .p1_models import ResearchRequest, ResearchRun, utc_now
 from .repository import RunRepository
@@ -26,8 +28,6 @@ class FirestoreRunRepository(RunRepository):
         self.client = client or firestore.Client(project=self.project)
 
     def create(self, request: ResearchRequest) -> ResearchRun:
-        from uuid import uuid4
-
         run = ResearchRun(
             run_id=f"run_p1_{uuid4().hex[:12]}",
             request=request,
@@ -47,6 +47,30 @@ class FirestoreRunRepository(RunRepository):
             return None
 
         return ResearchRun.model_validate(data)
+
+    def get_by_idempotency_key(
+        self,
+        idempotency_key: str,
+    ) -> ResearchRun | None:
+        query = (
+            self.client
+            .collection(self.collection)
+            .where(
+                filter=FieldFilter(
+                    "request.idempotency_key",
+                    "==",
+                    idempotency_key,
+                )
+            )
+            .limit(1)
+        )
+
+        for snapshot in query.stream():
+            data = snapshot.to_dict()
+            if data is not None:
+                return ResearchRun.model_validate(data)
+
+        return None
 
     def save(self, run: ResearchRun) -> ResearchRun:
         payload = run.model_dump(mode="python")

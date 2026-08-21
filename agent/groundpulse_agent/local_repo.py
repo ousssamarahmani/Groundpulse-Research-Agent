@@ -4,6 +4,8 @@ from pathlib import Path
 from threading import Lock
 from uuid import uuid4
 
+from pydantic import ValidationError
+
 from .p1_models import ResearchRequest, ResearchRun, utc_now
 from .repository import RunRepository
 
@@ -31,9 +33,34 @@ class FileRunRepository(RunRepository):
         path = self._path(run_id)
         if not path.exists():
             return None
-        return ResearchRun.model_validate_json(
-            path.read_text(encoding="utf-8")
-        )
+
+        try:
+            return ResearchRun.model_validate_json(
+                path.read_text(encoding="utf-8")
+            )
+        except ValidationError:
+            # Legacy files created before idempotency_key was required are
+            # intentionally ignored by the current P1 contract.
+            return None
+
+    def get_by_idempotency_key(
+        self,
+        idempotency_key: str,
+    ) -> ResearchRun | None:
+        for path in self.root.glob("*.json"):
+            try:
+                run = ResearchRun.model_validate_json(
+                    path.read_text(encoding="utf-8")
+                )
+            except ValidationError:
+                # Skip pre-idempotency local records instead of failing the
+                # entire POST /runs request with HTTP 500.
+                continue
+
+            if run.request.idempotency_key == idempotency_key:
+                return run
+
+        return None
 
     def save(self, run: ResearchRun) -> ResearchRun:
         path = self._path(run.run_id)

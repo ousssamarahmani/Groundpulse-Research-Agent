@@ -15,6 +15,7 @@ from groundpulse_agent.p1_models import (
 def make_request() -> ResearchRequest:
     return ResearchRequest.model_validate(
         {
+            "idempotency_key": "p1-test-iss-request-001",
             "question": (
                 "Given one approved CelesTrak GP snapshot for the ISS, "
                 "what is source-backed and what is unavailable?"
@@ -45,6 +46,7 @@ def test_create_and_restart_recovery(tmp_path) -> None:
     assert recovered is not None
     assert recovered.run_id == created.run_id
     assert recovered.status == "queued"
+    assert recovered.request.idempotency_key == "p1-test-iss-request-001"
     assert recovered.request.object.name == "ISS"
     assert recovered.request.allowed_source_ids == ["celestrak_gp_25544"]
 
