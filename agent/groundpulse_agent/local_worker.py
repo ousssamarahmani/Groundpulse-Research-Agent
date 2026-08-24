@@ -4,20 +4,39 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from .repository_factory import get_run_repository
+
 from .p1_models import ResearchRun, transition_run
 from .repository import RunRepository
+from .repository_factory import get_run_repository
+
 
 AGENT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = AGENT_ROOT.parent
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "p0"
+
+TRANSIENT_PROVIDER_MARKERS = (
+    "503 UNAVAILABLE",
+    "429 RESOURCE_EXHAUSTED",
+    "RESOURCE_EXHAUSTED",
+    "rate limit",
+    "rate_limit",
+    "temporarily unavailable",
+    "high demand",
+    "deadline exceeded",
+    "DEADLINE_EXCEEDED",
+)
+
+
+def is_transient_provider_failure(message: str) -> bool:
+    """Return True when a provider error should cause task redelivery."""
+    normalized = message.lower()
+    return any(marker.lower() in normalized for marker in TRANSIENT_PROVIDER_MARKERS)
 
 
 def execute_local_run(
     run_id: str,
     repository: RunRepository | None = None,
 ) -> ResearchRun:
-
     """Execute one queued run through the local ADK/P0 pipeline."""
     repository = repository or get_run_repository()
 
@@ -44,13 +63,20 @@ def execute_local_run(
         )
 
         if completed.returncode != 0:
+            failure_text = (
+                completed.stderr[-2000:]
+                or completed.stdout[-2000:]
+                or "P0 pipeline exited with a non-zero status"
+            )
+            error_code = (
+                "p0_pipeline_transient"
+                if is_transient_provider_failure(failure_text)
+                else "p0_pipeline_failed"
+            )
             failed = transition_run(run, "failed").model_copy(
                 update={
-                    "error_code": "p0_pipeline_failed",
-                    "review_reason": (
-                        completed.stderr[-2000:]
-                        or completed.stdout[-2000:]
-                    ),
+                    "error_code": error_code,
+                    "review_reason": failure_text,
                 }
             )
             repository.save(failed)
@@ -112,10 +138,16 @@ def execute_local_run(
         return released
 
     except Exception as exc:
+        failure_text = str(exc)
+        error_code = (
+            "local_worker_transient"
+            if is_transient_provider_failure(failure_text)
+            else "local_worker_exception"
+        )
         failed = transition_run(run, "failed").model_copy(
             update={
-                "error_code": "local_worker_exception",
-                "review_reason": str(exc),
+                "error_code": error_code,
+                "review_reason": failure_text,
             }
         )
         repository.save(failed)

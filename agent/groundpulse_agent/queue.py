@@ -30,14 +30,14 @@ class QueueTask(BaseModel):
 
 
 class TaskQueue(Protocol):
-    """Queue contract shared by local and future Cloud Tasks adapters."""
+    """Queue contract shared by local and Cloud Tasks adapters."""
 
     def enqueue_for_run(self, run_id: str) -> QueueTask:
         """Enqueue one task per run using run_id as the idempotency key."""
         ...
 
     def get(self, task_id: str) -> QueueTask | None:
-        """Retrieve a task by ID."""
+        """Retrieve a task by ID when it is available."""
         ...
 
     def get_for_run(self, run_id: str) -> QueueTask | None:
