@@ -18,6 +18,7 @@ class FirestoreRunRepository(RunRepository):
         *,
         project: str | None = None,
         collection: str = "research_runs",
+        database: str | None = None,
         client: firestore.Client | None = None,
     ) -> None:
         self.project = project or os.getenv(
@@ -25,7 +26,24 @@ class FirestoreRunRepository(RunRepository):
             "gen-lang-client-0100610229",
         )
         self.collection = collection
-        self.client = client or firestore.Client(project=self.project)
+        self.database = self._normalize_database_name(
+            database
+            if database is not None
+            else os.getenv("GOOGLE_CLOUD_FIRESTORE_DATABASE")
+        )
+
+        if client is not None:
+            self.client = client
+        elif self.database is None:
+            # Omitting database selects the normal Firestore default database.
+            # Passing the literal string "(default)" is rejected by some
+            # google-cloud-firestore client versions.
+            self.client = firestore.Client(project=self.project)
+        else:
+            self.client = firestore.Client(
+                project=self.project,
+                database=self.database,
+            )
 
     def create(self, request: ResearchRequest) -> ResearchRun:
         run = ResearchRun(
@@ -79,3 +97,10 @@ class FirestoreRunRepository(RunRepository):
 
     def _document(self, run_id: str):
         return self.client.collection(self.collection).document(run_id)
+
+    @staticmethod
+    def _normalize_database_name(database: str | None) -> str | None:
+        normalized = (database or "").strip()
+        if not normalized or normalized == "(default)":
+            return None
+        return normalized

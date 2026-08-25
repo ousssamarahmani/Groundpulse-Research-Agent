@@ -8,3 +8,5 @@ fastapi
 uvicorn[standard]
 google-cloud-firestore
 google-cloud-tasks
+google-cloud-storage
+google-api-core<2.35.0
