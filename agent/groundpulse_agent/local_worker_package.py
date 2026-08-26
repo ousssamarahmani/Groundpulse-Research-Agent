@@ -65,7 +65,7 @@ def execute_local_run(
         source_objects = _store_approved_sources(run, storage)
 
         completed = subprocess.run(
-            [sys.executable, "-m", "groundpulse_agent.run_p0"],
+            [sys.executable, "-m", "groundpulse_agent.run_p0", "--run-id", run_id],
             cwd=AGENT_ROOT,
             capture_output=True,
             text=True,
