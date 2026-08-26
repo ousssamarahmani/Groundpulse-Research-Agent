@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from google.api_core.exceptions import AlreadyExists, NotFound
@@ -11,8 +11,11 @@ from .p1_models import utc_now
 from .queue import QueueTask, TaskQueue
 
 
+TASK_DISPATCH_DEADLINE_SECONDS = 900
+
+
 class CloudTasksQueue(TaskQueue):
-    """Google Cloud Tasks HTTP queue with idempotent active-task reuse."""
+    """Google Cloud Tasks HTTP queue with retry-safe task handling."""
 
     def __init__(
         self,
@@ -32,9 +35,7 @@ class CloudTasksQueue(TaskQueue):
         if not queue_name.strip():
             raise ValueError("Cloud Tasks queue name must not be empty")
         if not worker_url.startswith("https://"):
-            raise ValueError(
-                "Cloud Tasks worker URL must be an HTTPS URL"
-            )
+            raise ValueError("Cloud Tasks worker URL must be an HTTPS URL")
         if not oidc_service_account_email.strip():
             raise ValueError(
                 "Cloud Tasks OIDC service account email must not be empty"
@@ -67,10 +68,6 @@ class CloudTasksQueue(TaskQueue):
                 task_id=deterministic_task_id,
             )
         except AlreadyExists:
-            # Cloud Tasks can retain a recently completed named task for a
-            # deduplication window even though get_task no longer returns it.
-            # A retry must receive a fresh name rather than being reported as
-            # queued without an active task.
             retry_task_id = self._retry_task_id(run_id)
             return self._create_task(
                 run_id=run_id,
@@ -100,12 +97,13 @@ class CloudTasksQueue(TaskQueue):
 
         task = tasks_v2.Task(
             name=task_name,
+            dispatch_deadline=timedelta(
+                seconds=TASK_DISPATCH_DEADLINE_SECONDS
+            ),
             http_request=tasks_v2.HttpRequest(
                 http_method=tasks_v2.HttpMethod.POST,
                 url=self.worker_url,
-                headers={
-                    "Content-Type": "application/json",
-                },
+                headers={"Content-Type": "application/json"},
                 body=body,
                 oidc_token=tasks_v2.OidcToken(
                     service_account_email=self.oidc_service_account_email,
@@ -158,13 +156,14 @@ class CloudTasksQueue(TaskQueue):
 
     @staticmethod
     def _deterministic_task_id(run_id: str) -> str:
-        safe_run_id = CloudTasksQueue._safe_run_id(run_id)
-        return f"task-{safe_run_id}"
+        return f"task-{CloudTasksQueue._safe_run_id(run_id)}"
 
     @staticmethod
     def _retry_task_id(run_id: str) -> str:
-        safe_run_id = CloudTasksQueue._safe_run_id(run_id)
-        return f"task-{safe_run_id}-retry-{uuid4().hex[:8]}"
+        return (
+            f"task-{CloudTasksQueue._safe_run_id(run_id)}"
+            f"-retry-{uuid4().hex[:8]}"
+        )
 
     @staticmethod
     def _safe_run_id(run_id: str) -> str:

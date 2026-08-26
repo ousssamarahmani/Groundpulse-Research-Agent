@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict
 
-from .local_worker import execute_local_run
-from .p1_models import ResearchRequest, ResearchRun, transition_run
+from .local_worker import execute_local_run, is_transient_provider_failure
+from .p1_models import ResearchRun, ResearchRequest, transition_run, utc_now
 from .queue import TaskQueue
 from .queue_factory import get_task_queue
 from .repository import RunRepository
@@ -19,11 +21,13 @@ app = FastAPI(
 repository: RunRepository = get_run_repository()
 task_queue: TaskQueue = get_task_queue()
 
-
 TRANSIENT_ERROR_CODES = {
     "p0_pipeline_transient",
+    "p0_pipeline_timeout",
     "local_worker_transient",
 }
+
+STALE_RUNNING_AFTER = timedelta(minutes=2)
 
 
 class CreateRunResponse(BaseModel):
@@ -53,9 +57,7 @@ def health() -> dict[str, str]:
 )
 def create_run(request: ResearchRequest) -> CreateRunResponse:
     """Create or reuse a run and enqueue exactly one active task."""
-    existing = repository.get_by_idempotency_key(
-        request.idempotency_key
-    )
+    existing = repository.get_by_idempotency_key(request.idempotency_key)
 
     if existing is not None:
         task = task_queue.enqueue_for_run(existing.run_id)
@@ -126,7 +128,7 @@ def execute_run(run_id: str) -> ResearchRun:
     name="retry_run",
 )
 def retry_run(run_id: str) -> ResearchRun:
-    """Move a failed run back to queued and enqueue one retry task."""
+    """Move an eligible run back to queued and enqueue one retry task."""
     run = repository.get(run_id)
 
     if run is None:
@@ -136,17 +138,7 @@ def retry_run(run_id: str) -> ResearchRun:
         )
 
     try:
-        queued = transition_run(run, "queued").model_copy(
-            update={
-                "started_at": None,
-                "completed_at": None,
-                "artifact_ids": [],
-                "snapshot_ids": [],
-                "validation_state": "pending",
-                "error_code": None,
-                "review_reason": None,
-            }
-        )
+        queued = _reset_run_for_retry(run)
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -167,12 +159,7 @@ def execute_worker_run(
     payload: dict[str, str],
     request: Request,
 ) -> ResearchRun:
-    """Execute a Cloud Tasks delivery and request retry for transient failures.
-
-    Cloud Run authentication protects this private endpoint. The run_id in the
-    JSON body is the authoritative task payload; Cloud Tasks headers are only
-    operational metadata.
-    """
+    """Execute a Cloud Tasks delivery and request retry for transient failures."""
     del request
 
     run_id = payload.get("run_id", "").strip()
@@ -189,24 +176,21 @@ def execute_worker_run(
             detail=f"Run not found: {run_id}",
         )
 
-    # Cloud Tasks redelivers after a transient 503. The previous delivery has
-    # already persisted the run as failed, so requeue it before executing.
-    if (
-        current.status == "failed"
-        and current.error_code in TRANSIENT_ERROR_CODES
-    ):
-        current = transition_run(current, "queued").model_copy(
-            update={
-                "started_at": None,
-                "completed_at": None,
-                "artifact_ids": [],
-                "snapshot_ids": [],
-                "validation_state": "pending",
-                "error_code": None,
-                "review_reason": None,
-            }
-        )
+    if current.status == "failed" and current.error_code in TRANSIENT_ERROR_CODES:
+        current = _reset_run_for_retry(current)
         repository.save(current)
+    elif current.status == "running":
+        if _is_stale_running(current):
+            current = _reset_run_for_retry(current)
+            repository.save(current)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "Run is already running; Cloud Tasks should not duplicate "
+                    "an active worker lease"
+                ),
+            )
 
     try:
         result = execute_local_run(run_id, repository=repository)
@@ -222,12 +206,46 @@ def execute_worker_run(
         ) from exc
 
     if result.error_code in TRANSIENT_ERROR_CODES:
-        # A non-2xx response tells Cloud Tasks to retry the same delivery.
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=(
-                "Transient Gemini/provider failure; Cloud Tasks should retry"
-            ),
+            detail="Transient provider or worker timeout; Cloud Tasks should retry",
+        )
+
+    if result.error_code and is_transient_provider_failure(
+        result.review_reason or ""
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Transient provider failure; Cloud Tasks should retry",
         )
 
     return result
+
+
+def _is_stale_running(run: ResearchRun) -> bool:
+    if run.started_at is None:
+        return True
+    return utc_now() - run.started_at >= STALE_RUNNING_AFTER
+
+
+def _reset_run_for_retry(run: ResearchRun) -> ResearchRun:
+    if run.status == "failed":
+        queued = transition_run(run, "queued")
+    elif run.status == "running":
+        queued = transition_run(run, "queued")
+    else:
+        raise ValueError(
+            f"Run {run.run_id} is not eligible for retry from status {run.status}"
+        )
+
+    return queued.model_copy(
+        update={
+            "started_at": None,
+            "completed_at": None,
+            "artifact_ids": [],
+            "snapshot_ids": [],
+            "validation_state": "pending",
+            "error_code": None,
+            "review_reason": None,
+        }
+    )

@@ -75,7 +75,7 @@ class ResearchRun(BaseModel):
 ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     "created": {"queued", "failed"},
     "queued": {"running", "failed"},
-    "running": {"validating", "failed"},
+    "running": {"queued", "validating", "failed"},
     "validating": {"packaging", "held_for_review", "failed"},
     "packaging": {"released", "held_for_review", "failed"},
     "released": set(),

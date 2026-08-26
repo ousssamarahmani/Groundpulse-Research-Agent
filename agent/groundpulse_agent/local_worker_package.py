@@ -21,8 +21,6 @@ SOURCE_SNAPSHOT_FILES = {
     "celestrak_gp_25544": SOURCE_SNAPSHOT_ROOT / "celestrak_gp_25544.json",
 }
 
-P0_SUBPROCESS_TIMEOUT_SECONDS = 540
-
 TRANSIENT_PROVIDER_MARKERS = (
     "503 UNAVAILABLE",
     "429 RESOURCE_EXHAUSTED",
@@ -33,13 +31,11 @@ TRANSIENT_PROVIDER_MARKERS = (
     "high demand",
     "deadline exceeded",
     "DEADLINE_EXCEEDED",
-    "timed out",
-    "timeout",
 )
 
 
 def is_transient_provider_failure(message: str) -> bool:
-    """Return True when a provider or execution timeout should be retried."""
+    """Return True when a provider error should cause task redelivery."""
     normalized = message.lower()
     return any(marker.lower() in normalized for marker in TRANSIENT_PROVIDER_MARKERS)
 
@@ -68,30 +64,13 @@ def execute_local_run(
     try:
         source_objects = _store_approved_sources(run, storage)
 
-        try:
-            completed = subprocess.run(
-                [sys.executable, "-m", "groundpulse_agent.run_p0"],
-                cwd=AGENT_ROOT,
-                capture_output=True,
-                text=True,
-                timeout=P0_SUBPROCESS_TIMEOUT_SECONDS,
-            )
-        except subprocess.TimeoutExpired as exc:
-            stdout = exc.stdout or ""
-            stderr = exc.stderr or ""
-            failure_text = (
-                f"P0 pipeline timed out after "
-                f"{P0_SUBPROCESS_TIMEOUT_SECONDS} seconds. "
-                f"{stderr[-1500:]} {stdout[-500:]}"
-            ).strip()
-            failed = transition_run(run, "failed").model_copy(
-                update={
-                    "error_code": "p0_pipeline_timeout",
-                    "review_reason": failure_text,
-                }
-            )
-            repository.save(failed)
-            return failed
+        completed = subprocess.run(
+            [sys.executable, "-m", "groundpulse_agent.run_p0"],
+            cwd=AGENT_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
 
         if completed.returncode != 0:
             failure_text = (
