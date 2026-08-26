@@ -7,6 +7,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google.adk.agents import Agent
 
+from .models import ClaimLedger
+
 
 load_dotenv()
 
@@ -22,7 +24,7 @@ def read_approved_snapshot() -> dict:
 
 
 root_agent = Agent(
-    model=os.getenv("GEMINI_MODEL", "gemini-flash-latest"),
+    model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
     name="groundpulse_research_coordinator",
     description="Creates a source-linked candidate claim ledger from one approved snapshot.",
     instruction="""
@@ -35,12 +37,20 @@ Call that tool before making any claims.
 Use only the returned CelesTrak snapshot. Do not browse, invent URLs,
 use outside knowledge, or infer live telemetry.
 
-Return only JSON with this structure:
+Return one ClaimLedger object. The response must contain exactly these top-level
+fields: run_id and claims. Each item in claims must contain exactly these fields:
+claim_id, claim, classification, source_ids, source_fields, derivation_inputs,
+and gap_reason.
+
+Do not return a normalized summary. Do not return has_gap_reason. Do not omit
+claim_id or claim. Do not add any other fields.
+
+The required shape is:
 {
   "run_id": "run_celestrak_gp_25544_001",
   "claims": [
     {
-      "claim_id": "...",
+      "claim_id": "claim-1",
       "claim": "...",
       "classification": "source-backed|derived|gap",
       "source_ids": [],
@@ -51,11 +61,20 @@ Return only JSON with this structure:
   ]
 }
 
+Return exactly three claims:
+1. One source-backed claim about ISS or NORAD catalog ID.
+2. One derived claim about approximate orbital period using
+   period_minutes = 1440 / MEAN_MOTION.
+3. One gap explaining that live telemetry and spacecraft health are unavailable.
+
 Every source-backed claim must include source_ids=["celestrak_gp_25544"]
 and real source_fields from the snapshot.
-Every derived claim must include source_ids and derivation_inputs.
+Every derived claim must include source_ids=["celestrak_gp_25544"],
+source_fields=["MEAN_MOTION"], and derivation_inputs including
+"MEAN_MOTION" and "period_minutes = 1440 / MEAN_MOTION".
 Every unavailable operational fact must be represented as a gap with gap_reason.
 The application validator, not the model, decides whether the ledger is admissible.
 """,
     tools=[read_approved_snapshot],
+    output_schema=ClaimLedger,
 )
