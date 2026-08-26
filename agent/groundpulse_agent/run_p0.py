@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 from datetime import datetime, timezone
@@ -78,7 +79,17 @@ def clean_json_text(text: str) -> str:
 
     return cleaned
 
-async def main() -> None:
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run the GroundPulse P0 agent pipeline")
+    parser.add_argument(
+        "--run-id",
+        required=True,
+        help="Authoritative run ID created by the Research API",
+    )
+    return parser.parse_args()
+
+
+async def main(run_id: str) -> None:
     scope = json.loads(SCOPE_PATH.read_text(encoding="utf-8"))
     raw_source = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
 
@@ -122,6 +133,9 @@ async def main() -> None:
 
     cleaned_final_text = clean_json_text(final_text)
     ledger = ClaimLedger.model_validate_json(cleaned_final_text)
+    # The API-created run ID is authoritative. The model output may contain
+    # an example or stale ID, so normalize it before writing any artifact.
+    ledger = ledger.model_copy(update={"run_id": run_id})
     errors = validate_ledger(
         ledger,
         raw_source,
@@ -136,6 +150,7 @@ async def main() -> None:
         json.dumps(
             {
                 "execution_id": execution_id,
+                "run_id": run_id,
                 "scope_id": scope["scope_id"],
                 "question": scope["question"],
                 "prompt_version": scope["prompt_version"],
@@ -201,6 +216,7 @@ async def main() -> None:
     (out_dir / "normalized_result.json").write_text(
         json.dumps(
             {
+                "run_id": run_id,
                 "claims": normalized_claims,
                 "validation_passed": len(errors) == 0,
                 "source_id": scope["approved_sources"][0]["source_id"],
@@ -223,4 +239,5 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    args = parse_args()
+    asyncio.run(main(args.run_id))
