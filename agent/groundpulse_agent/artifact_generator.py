@@ -14,17 +14,27 @@ def generate_research_package(
     source_id: str,
     validation_passed: bool,
 ) -> list[Path]:
-    """Generate deterministic review artifacts from normalized_result.json."""
-    normalized_path = artifact_directory / "normalized_result.json"
-    if not normalized_path.exists():
-        raise FileNotFoundError(f"Missing normalized ledger: {normalized_path}")
+    """Generate deterministic review artifacts from a canonical ledger file.
 
-    envelope = json.loads(normalized_path.read_text(encoding="utf-8"))
-    ledger = ClaimLedger.model_validate(
-        {
-            "run_id": envelope["run_id"],
-            "claims": envelope["claims"],
-        }
+    Production runs provide ``candidate_ledger.json``. Older fixtures and
+    callers provide the same canonical ClaimLedger envelope as
+    ``normalized_result.json``. Support both inputs while never validating the
+    reduced normalized summary emitted by the P0 pipeline.
+    """
+    candidate_path = artifact_directory / "candidate_ledger.json"
+    normalized_path = artifact_directory / "normalized_result.json"
+
+    if candidate_path.exists():
+        ledger_path = candidate_path
+    elif normalized_path.exists():
+        ledger_path = normalized_path
+    else:
+        raise FileNotFoundError(
+            f"Missing candidate ledger or normalized result in {artifact_directory}"
+        )
+
+    ledger = ClaimLedger.model_validate_json(
+        ledger_path.read_text(encoding="utf-8")
     )
 
     if ledger.run_id != run_id:
