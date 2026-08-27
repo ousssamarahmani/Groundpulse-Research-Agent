@@ -66,6 +66,30 @@ class FirestoreRunRepository(RunRepository):
 
         return ResearchRun.model_validate(data)
 
+    def list_runs(
+        self,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> list[ResearchRun]:
+        if limit < 1 or offset < 0:
+            raise ValueError("limit must be positive and offset must be non-negative")
+
+        query = (
+            self.client
+            .collection(self.collection)
+            .order_by("created_at", direction=firestore.Query.DESCENDING)
+            .offset(offset)
+            .limit(limit)
+        )
+
+        runs: list[ResearchRun] = []
+        for snapshot in query.stream():
+            data = snapshot.to_dict()
+            if data is not None:
+                runs.append(ResearchRun.model_validate(data))
+        return runs
+
     def get_by_idempotency_key(
         self,
         idempotency_key: str,

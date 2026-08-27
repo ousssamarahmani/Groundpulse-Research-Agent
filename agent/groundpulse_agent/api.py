@@ -5,6 +5,7 @@ from datetime import timedelta
 from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict
 
+from .dashboard_api import router as dashboard_router
 from .local_worker import execute_local_run, is_transient_provider_failure
 from .p1_models import ResearchRun, ResearchRequest, transition_run, utc_now
 from .queue import TaskQueue
@@ -20,6 +21,8 @@ app = FastAPI(
 
 repository: RunRepository = get_run_repository()
 task_queue: TaskQueue = get_task_queue()
+
+app.include_router(dashboard_router)
 
 TRANSIENT_ERROR_CODES = {
     "p0_pipeline_transient",

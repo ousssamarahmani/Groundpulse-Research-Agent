@@ -16,6 +16,15 @@ class RunRepository(Protocol):
         """Retrieve a run by ID, or return None if it does not exist."""
         ...
 
+    def list_runs(
+        self,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> list[ResearchRun]:
+        """Return recent valid runs in deterministic newest-first order."""
+        ...
+
     def get_by_idempotency_key(
         self,
         idempotency_key: str,

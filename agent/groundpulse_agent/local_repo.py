@@ -43,6 +43,29 @@ class FileRunRepository(RunRepository):
             # intentionally ignored by the current P1 contract.
             return None
 
+    def list_runs(
+        self,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> list[ResearchRun]:
+        if limit < 1 or offset < 0:
+            raise ValueError("limit must be positive and offset must be non-negative")
+
+        runs: list[ResearchRun] = []
+        for path in self.root.glob("*.json"):
+            try:
+                runs.append(
+                    ResearchRun.model_validate_json(
+                        path.read_text(encoding="utf-8")
+                    )
+                )
+            except ValidationError:
+                continue
+
+        runs.sort(key=lambda run: (run.created_at, run.run_id), reverse=True)
+        return runs[offset : offset + limit]
+
     def get_by_idempotency_key(
         self,
         idempotency_key: str,
