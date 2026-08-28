@@ -208,7 +208,6 @@ def clean_json_text(text: str) -> str:
 
     return cleaned
 
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the GroundPulse P0 agent pipeline"
