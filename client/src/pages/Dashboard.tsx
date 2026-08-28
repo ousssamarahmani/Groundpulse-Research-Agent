@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -55,7 +55,7 @@ type EvidenceItem = {
 };
 
 function formatTime(value: string | null) {
-  if (!value) return "—";
+  if (!value) return "â€”";
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -63,7 +63,7 @@ function formatTime(value: string | null) {
 }
 
 function relativeTime(value: string | null) {
-  if (!value) return "—";
+  if (!value) return "â€”";
   const seconds = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 1000));
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.round(seconds / 60);
@@ -157,7 +157,7 @@ export default function Dashboard() {
   const stages = selectedRun ? stagesForRun(selectedRun) : [];
   const evidence = selectedRun ? evidenceForRun(selectedRun, artifacts) : [];
   const shownEvidence = filter === "All" ? evidence : evidence.filter((item) => item.type === filter);
-  const packageArtifacts = useMemo(() => artifacts.filter((artifact) => artifact.name.includes("artifact/")).slice(0, 6), [artifacts]);
+  const packageArtifacts = useMemo(() => artifacts, [artifacts]);
 
   const chooseNav = (label: string) => {
     setActiveNav(label);
@@ -166,7 +166,7 @@ export default function Dashboard() {
 
   const submitRequest = () => {
     setRequestOpen(false);
-    toast("Research request form", { description: `“${requestTitle || "Untitled request"}” submission will be connected to POST /runs next.` });
+    toast("Research request form", { description: `â€œ${requestTitle || "Untitled request"}â€ submission will be connected to POST /runs next.` });
   };
 
   return (
@@ -179,9 +179,9 @@ export default function Dashboard() {
       </aside>
 
       <main className="dash-main">
-        <header className="dash-header"><div className="dash-heading"><button className="dash-menu" onClick={() => setMenuOpen(true)} aria-label="Open dashboard menu"><Menu size={20} /></button><div><p className="dash-eyebrow">RESEARCH WORKSPACE / LIVE RUN ARCHIVE</p><h1>Mission control</h1></div></div><div className="dash-actions"><button className="search-control" onClick={() => toast("Search", { description: "Run search will use the dashboard archive." })}><Search size={16} /><span>Search records</span><kbd>⌘ K</kbd></button><Button className="new-run" onClick={() => setRequestOpen(true)}><Plus size={16} /> New research</Button></div></header>
+        <header className="dash-header"><div className="dash-heading"><button className="dash-menu" onClick={() => setMenuOpen(true)} aria-label="Open dashboard menu"><Menu size={20} /></button><div><p className="dash-eyebrow">RESEARCH WORKSPACE / LIVE RUN ARCHIVE</p><h1>Mission control</h1></div></div><div className="dash-actions"><button className="search-control" onClick={() => toast("Search", { description: "Run search will use the dashboard archive." })}><Search size={16} /><span>Search records</span><kbd>âŒ˜ K</kbd></button><Button className="new-run" onClick={() => setRequestOpen(true)}><Plus size={16} /> New research</Button></div></header>
 
-        {loading && <div className="dash-card" style={{ marginBottom: 18, padding: 18 }}>Loading live research runs…</div>}
+        {loading && <div className="dash-card" style={{ marginBottom: 18, padding: 18 }}>Loading live research runsâ€¦</div>}
         {error && <div className="dash-card" style={{ marginBottom: 18, padding: 18 }}>Dashboard API unavailable: {error}</div>}
         {!loading && !error && !selectedRun && <div className="dash-card" style={{ marginBottom: 18, padding: 18 }}>No research runs are available yet.</div>}
 
@@ -193,14 +193,14 @@ export default function Dashboard() {
           <section className="dash-grid-primary">
             <article className="dash-card stage-card"><div className="card-label"><span>MISSION PATH / AGENT WORKFLOW</span><b>04 stages</b></div><div className="stage-list">{stages.map((stage, index) => <div className={`stage-row ${stage.state}`} key={stage.label}><div className="stage-index">{stage.state === "done" ? <Check size={14} /> : index + 1}</div><div><b>{stage.label}</b><small>{stage.sub}</small></div><span className="stage-state">{stage.state === "done" ? "Complete" : stage.state === "active" ? "Running" : "Queued"}</span></div>)}</div><div className="stage-footer"><ShieldCheck size={15} /> Claim release is gated by evidence validation.</div></article>
 
-            <article className="dash-card brief-detail"><div className="card-label"><span>{activeTab === "Overview" ? "MISSION PARAMETERS" : activeTab === "Evidence" ? "CLAIM AUDIT" : "PACKAGE MANIFEST"}</span><button onClick={() => toast("Run details", { description: selectedRun.decision_intent })}><MoreHorizontal size={18} /></button></div>{activeTab === "Overview" ? <div className="parameter-grid"><div><span>OBJECT</span><b>{selectedRun.object_name}</b></div><div><span>NORAD ID</span><b>{selectedRun.norad_catalog_id ?? "Not supplied"}</b></div><div><span>WINDOW</span><b>UTC · {formatTime(selectedRun.created_at)}</b></div><div><span>INTENT</span><b>{selectedRun.decision_intent}</b></div></div> : activeTab === "Evidence" ? <div className="audit-panel"><div><ShieldCheck size={22} /><p><b>{selectedRun.validation_state === "passed" ? "Validation passed" : selectedRun.validation_state}</b><span>Canonical ledger and evidence rules are applied by the worker.</span></p></div><div><CircleDot size={22} /><p><b>{selectedRun.snapshot_ids.length} approved source snapshot{selectedRun.snapshot_ids.length === 1 ? "" : "s"}</b><span>{selectedRun.allowed_source_ids.join(", ") || "No source IDs"}</span></p></div><div><Target size={22} /><p><b>{selectedRun.artifact_ids.length} artifact reference{selectedRun.artifact_ids.length === 1 ? "" : "s"}</b><span>Immutable package metadata is available below.</span></p></div></div> : <div className="manifest-panel"><div><span>RUN ID</span><b>{selectedRun.run_id}</b></div><div><span>ARTIFACTS</span><b>{artifacts.length} immutable objects</b></div><div><span>RELEASE</span><b>{selectedRun.status}</b></div><button onClick={() => setActiveTab("Package")}>Preview package <ArrowUpRight size={14} /></button></div>}</article>
+            <article className="dash-card brief-detail"><div className="card-label"><span>{activeTab === "Overview" ? "MISSION PARAMETERS" : activeTab === "Evidence" ? "CLAIM AUDIT" : "PACKAGE MANIFEST"}</span><button onClick={() => toast("Run details", { description: selectedRun.decision_intent })}><MoreHorizontal size={18} /></button></div>{activeTab === "Overview" ? <div className="parameter-grid"><div><span>OBJECT</span><b>{selectedRun.object_name}</b></div><div><span>NORAD ID</span><b>{selectedRun.norad_catalog_id ?? "Not supplied"}</b></div><div><span>WINDOW</span><b>UTC Â· {formatTime(selectedRun.created_at)}</b></div><div><span>INTENT</span><b>{selectedRun.decision_intent}</b></div></div> : activeTab === "Evidence" ? <div className="audit-panel"><div><ShieldCheck size={22} /><p><b>{selectedRun.validation_state === "passed" ? "Validation passed" : selectedRun.validation_state}</b><span>Canonical ledger and evidence rules are applied by the worker.</span></p></div><div><CircleDot size={22} /><p><b>{selectedRun.snapshot_ids.length} approved source snapshot{selectedRun.snapshot_ids.length === 1 ? "" : "s"}</b><span>{selectedRun.allowed_source_ids.join(", ") || "No source IDs"}</span></p></div><div><Target size={22} /><p><b>{selectedRun.artifact_ids.length} artifact reference{selectedRun.artifact_ids.length === 1 ? "" : "s"}</b><span>Immutable package metadata is available below.</span></p></div></div> : <div className="manifest-panel"><div><span>RUN ID</span><b>{selectedRun.run_id}</b></div><div><span>ARTIFACTS</span><b>{artifacts.length} immutable objects</b></div><div><span>RELEASE</span><b>{selectedRun.status}</b></div><button onClick={() => setActiveTab("Package")}>Preview package <ArrowUpRight size={14} /></button></div>}</article>
 
-            <article className="dash-card confidence-card"><div className="card-label"><span>EVIDENCE STATE</span><b className={selectedRun.validation_state === "passed" ? "violet-text" : ""}>{selectedRun.validation_state}</b></div><div className="confidence-gauge"><div><strong>{selectedRun.validation_state === "passed" ? "OK" : "—"}</strong><span>validation gate</span></div></div><p>{selectedRun.error_code ? `${selectedRun.error_code}: ${selectedRun.review_reason ?? "review required"}` : "Run state and validation metadata are sourced from the research API."}</p><div className="confidence-legend"><span><i className="legend-verified" /> Supported</span><span><i className="legend-derived" /> Derived</span><span><i className="legend-gap" /> Gap</span></div></article>
+            <article className="dash-card confidence-card"><div className="card-label"><span>EVIDENCE STATE</span><b className={selectedRun.validation_state === "passed" ? "violet-text" : ""}>{selectedRun.validation_state}</b></div><div className="confidence-gauge"><div><strong>{selectedRun.validation_state === "passed" ? "OK" : "â€”"}</strong><span>validation gate</span></div></div><p>{selectedRun.error_code ? `${selectedRun.error_code}: ${selectedRun.review_reason ?? "review required"}` : "Run state and validation metadata are sourced from the research API."}</p><div className="confidence-legend"><span><i className="legend-verified" /> Supported</span><span><i className="legend-derived" /> Derived</span><span><i className="legend-gap" /> Gap</span></div></article>
           </section>
 
           <section className="dash-grid-secondary"><article className="dash-card ledger-card"><div className="ledger-head"><div><p className="card-label"><span>MISSION PATH / EVIDENCE LEDGER</span></p><h2>Source review</h2></div><button className="filter-button" onClick={() => setFilter(filter === "All" ? "Verified" : "All")}><Filter size={14} /> {filter === "All" ? "Filter" : filter}</button></div><div className="ledger-tabs">{["All", "Verified", "Derived", "Gaps"].map((item) => <button className={filter === item ? "active" : ""} key={item} onClick={() => setFilter(item)}>{item}</button>)}</div><div className="ledger-list">{shownEvidence.length ? shownEvidence.map((item) => <button className="ledger-row" key={item.name} onClick={() => toast(item.name, { description: item.meta })}><span className={`ledger-dot ${item.tone}`} /><span className="ledger-copy"><b>{item.name}</b><small>{item.meta}</small></span><span className={`ledger-status ${item.tone}`}>{item.status}</span><ArrowUpRight size={14} /></button>) : <div className="ledger-row"><span className="ledger-copy"><b>No evidence records</b><small>The API returned no matching ledger entries.</small></span></div>}</div></article><article className="dash-card trace-card"><div className="ledger-head"><div><p className="card-label"><span>MISSION PATH / RUN TRACE</span></p><h2>Execution events</h2></div><button onClick={() => toast("Trace refreshed", { description: "Run metadata is current." })}><span className="live-dot" /> Live</button></div><div className="trace-list">{[["REQUEST", "Request accepted", selectedRun.question], ["SOURCE", "Approved evidence selected", selectedRun.snapshot_ids.join(", ") || "Awaiting snapshot"], ["VALIDATION", "Claim gate evaluated", selectedRun.validation_state], ["PACKAGE", "Immutable package stored", selectedRun.status]].map(([time, title, description], index, rows) => <div className="trace-row" key={time}><div className="trace-time">{time}</div><div className="trace-line"><span className={index === rows.length - 1 ? "current" : ""} /></div><div><b>{title}</b><p>{description}</p></div></div>)}</div></article></section>
 
-          <section className="dash-bottom-grid"><article className="dash-card packages-card"><div className="ledger-head"><div><p className="card-label"><span>MISSION PATH / RECENT RUNS</span></p><h2>Research archive</h2></div><button onClick={() => setSelectedRunId(null)}>View all <ArrowUpRight size={14} /></button></div><div className="packages-table"><div className="packages-head"><span>RUN</span><span>STATE</span><span>UPDATED</span></div>{runs.slice(0, 4).map((run) => <button key={run.run_id} onClick={() => setSelectedRunId(run.run_id)}><FileText size={16} /><span><b>{run.run_id}</b><small>{run.object_name} · {run.validation_state}</small></span><em>{run.status}</em><time>{relativeTime(run.completed_at ?? run.created_at)}</time></button>)}</div></article><article className="dash-card gap-card"><div className="gap-icon"><Sparkles size={20} /></div><p className="card-label"><span>MISSION PATH / IMMUTABLE PACKAGE</span></p><h2>{packageArtifacts.length ? `${packageArtifacts.length} package objects available.` : "No package objects listed yet."}</h2><p>{packageArtifacts.length ? "Open an artifact through the authenticated Dashboard API boundary." : "Artifacts will appear after the run reaches released."}</p>{packageArtifacts[0] && <a href={artifactUrl(selectedRun.run_id, packageArtifacts[0].name)} target="_blank" rel="noreferrer">Open package artifact <ArrowUpRight size={14} /></a>}</article></section>
+          <section className="dash-bottom-grid"><article className="dash-card packages-card"><div className="ledger-head"><div><p className="card-label"><span>MISSION PATH / RECENT RUNS</span></p><h2>Research archive</h2></div><button onClick={() => setSelectedRunId(null)}>View all <ArrowUpRight size={14} /></button></div><div className="packages-table"><div className="packages-head"><span>RUN</span><span>STATE</span><span>UPDATED</span></div>{runs.slice(0, 4).map((run) => <button key={run.run_id} onClick={() => setSelectedRunId(run.run_id)}><FileText size={16} /><span><b>{run.run_id}</b><small>{run.object_name} Â· {run.validation_state}</small></span><em>{run.status}</em><time>{relativeTime(run.completed_at ?? run.created_at)}</time></button>)}</div></article><article className="dash-card gap-card"><div className="gap-icon"><Sparkles size={20} /></div><p className="card-label"><span>MISSION PATH / IMMUTABLE PACKAGE</span></p><h2>{packageArtifacts.length ? `${packageArtifacts.length} package objects available.` : "No package objects listed yet."}</h2><p>{packageArtifacts.length ? "Open an artifact through the authenticated Dashboard API boundary." : "Artifacts will appear after the run reaches released."}</p>{packageArtifacts[0] && <a href={artifactUrl(selectedRun.run_id, packageArtifacts[0].name)} target="_blank" rel="noreferrer">Open package artifact <ArrowUpRight size={14} /></a>}</article></section>
         </>}
       </main>
 
@@ -208,3 +208,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
