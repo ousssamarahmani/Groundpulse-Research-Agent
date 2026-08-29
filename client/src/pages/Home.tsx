@@ -14,6 +14,7 @@ import {
   GitBranch,
   LockKeyhole,
   Menu,
+  Play,
   Radar,
   SatelliteDish,
   ScanSearch,
@@ -23,16 +24,24 @@ import {
 import { toast } from "sonner";
 import { journalPosts } from "@/lib/journal";
 
-const mark = "/assets/groundpulse-mark.png";
-const heroArt = "/assets/groundpulse-hero-orbit.jpg";
-const evidenceArt = "/assets/groundpulse-evidence-orbit.jpg";
-const packageArt = "/assets/groundpulse-package-artifact.jpg";
-const operatorArt = "/assets/groundpulse-usecase-satellite-operator.jpg";
-const stationArt = "/assets/groundpulse-usecase-ground-station.jpg";
-const researchArt = "/assets/groundpulse-usecase-research-network.jpg";
+const mark = "/manus-storage/groundpulse-mark_385613b6.png";
+const heroArt = "/manus-storage/groundpulse-hero-orbit_921a6f30.jpg";
+const evidenceArt = "/manus-storage/groundpulse-evidence-orbit_e80528b9.jpg";
+const packageArt = "/manus-storage/groundpulse-package-artifact_a5613273.jpg";
+const operatorArt = "/manus-storage/groundpulse-usecase-satellite-operator_8bc74750.jpg";
+const stationArt = "/manus-storage/groundpulse-usecase-ground-station_6fcf41df.jpg";
+const researchArt = "/manus-storage/groundpulse-usecase-research-network_36523668.jpg";
+
+const sampleRun = {
+  id: "RUN-DEMO-038",
+  question: "Ground-station coverage review · Budapest",
+  source: "celestrak_gp_25544",
+  state: "READY FOR REPLAY",
+};
 
 const navItems = [
   ["Product", "#product"],
+  ["Proof", "#proof"],
   ["How it works", "#workflow"],
   ["Outputs", "#outputs"],
   ["Use cases", "#use-cases"],
@@ -58,7 +67,7 @@ function Brand() {
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const notifyWorkspace = () => toast("Product preview coming soon", { description: "The interactive research console is the next milestone for GroundPulse Research Agent." });
+  const notifyWorkspace = () => toast("Sample run ready", { description: "Open Mission Control to replay the evidence-first workflow." });
   const requestAccess = () => toast("Early access is opening soon", { description: "GroundPulse is currently being prepared for initial research teams." });
 
   return (
@@ -86,22 +95,40 @@ export default function Home() {
             <div className="hero-buttons"><button className="button primary" onClick={requestAccess}>Request early access <ArrowRight size={17} /></button><a className="button quiet" href="#outputs">See what you receive <ArrowUpRight size={16} /></a></div>
           </div>
           <aside className="hero-console reveal delay-2" aria-label="Live workflow preview">
-            <div className="console-topline"><span>AGENT RUN / PRODUCT PREVIEW</span><span className="console-live">VALIDATING</span></div>
+            <div className="console-topline"><span>SAMPLE RUN / TRACEABLE PATH</span><span className="console-live">DEMO READY</span></div>
             <div className="console-title"><SatelliteDish size={19} /><div><strong>Coverage review / Budapest</strong><small>Ground-station research request</small></div></div>
             <div className="mini-flow"><div className="done"><Check size={13} /><span>Plan request</span><b>Complete</b></div><div className="done"><Check size={13} /><span>Discover sources</span><b>3 adapters</b></div><div className="current"><Radar size={14} /><span>Validate evidence</span><b>In progress</b></div><div><span className="empty-node" /><span>Build package</span><b>Queued</b></div></div>
-            <div className="console-footer"><LockKeyhole size={14} /> No unsupported claim can be released.</div>
+            <div className="console-footer"><LockKeyhole size={14} /> Demo state only · evidence gate is visible.</div>
           </aside>
         </div>
         <div className="hero-status container"><div><span>01</span><p><b>Ask the question</b><small>Mission, place, time window</small></p></div><div><span>02</span><p><b>Validate the sources</b><small>Coverage and provenance checked</small></p></div><div><span>03</span><p><b>Review the packet</b><small>Claims, citations, gaps</small></p></div><a href="#request-access">REQUEST ACCESS <ArrowRight size={15} /></a></div>
       </section>
 
-      <section id="product" data-path="01 · THE PRODUCT" className="mission-section section container">
+      <section id="proof" data-path="01 · PROOF OF SYSTEM" className="proof-section section">
+        <div className="container proof-layout">
+          <div className="proof-copy reveal">
+            <p className="eyebrow"><span className="pulse-dot" /> PROOF OF SYSTEM</p>
+            <h2>See the run,<br /><em>not just the promise.</em></h2>
+            <p>Replay a complete sample mission in Mission Control: a structured request, approved source, evidence gate, visible gap, and package-ready state.</p>
+            <a className="button primary" href="/dashboard"><Play size={16} fill="currentColor" /> Replay sample run <ArrowUpRight size={16} /></a>
+            <small className="proof-disclaimer">Deterministic demo state · no live services connected</small>
+          </div>
+          <div className="proof-run-card reveal delay-1">
+            <div className="proof-run-head"><span><span className="live-dot" /> SAMPLE MISSION REPLAY</span><b>{sampleRun.state}</b></div>
+            <div className="proof-run-title"><div className="proof-run-icon"><Radar size={19} /></div><div><span>{sampleRun.id}</span><strong>{sampleRun.question}</strong></div></div>
+            <div className="proof-run-steps"><div className="proof-step done"><Check size={14} /><span>Request framed</span><b>01</b></div><div className="proof-step done"><Check size={14} /><span>Source approved</span><b>{sampleRun.source}</b></div><div className="proof-step active"><Radar size={14} /><span>Evidence gate</span><b>READY</b></div><div className="proof-step"><span className="empty-node" /><span>Package release</span><b>QUEUED</b></div></div>
+            <div className="proof-run-foot"><span>Claims · citations · gaps</span><a href="/dashboard">Open Mission Control <ArrowUpRight size={14} /></a></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="product" data-path="02 · THE PRODUCT" className="mission-section section container">
         <div className="mission-number">01</div>
         <div className="mission-heading reveal"><p className="eyebrow">RESEARCH WITHOUT THE CONTEXT TAX</p><h2>Move from scattered sources to a <em>defensible decision.</em></h2></div>
         <div className="mission-copy reveal delay-1"><p>Satellite and ground-segment teams lose time gathering context across portals, PDFs, datasets, and operational assumptions before the actual analysis even begins.</p><p>GroundPulse compresses that work into an inspectable agent run: a clear question, validated sources, and a packet that states exactly what is supported—and what is still missing.</p><a className="inline-link" href="#outputs">Inspect the product outputs <ArrowUpRight size={15} /></a></div>
       </section>
 
-      <section id="workflow" data-path="02 · AGENT WORKFLOW" className="workflow-section section">
+      <section id="workflow" data-path="03 · AGENT WORKFLOW" className="workflow-section section">
         <div className="container">
           <div className="section-intro"><div className="reveal"><p className="eyebrow">HOW GROUNDPULSE WORKS</p><h2>One question in.<br /><em>A research-ready packet out.</em></h2></div><p className="reveal delay-1">GroundPulse does not jump from prompt to prose. It works through a controlled workflow where evidence is assessed before a research claim is written.</p></div>
           <div className="workflow-rail">{workflow.map(({ number, title, description, icon: Icon, active }, index) => <article className={`workflow-card ${active ? "active" : ""} reveal`} style={{ transitionDelay: `${index * 65}ms` }} key={number}><div className="workflow-card-top"><span>{number}</span><Icon size={21} strokeWidth={1.4} /></div><h3>{title}</h3><p>{description}</p><div className="workflow-card-footer">{active ? <><span className="active-dot" /> Evidence gate active</> : <><ChevronRight size={14} /> Structured state</>}</div></article>)}</div>
@@ -109,7 +136,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="outputs" data-path="03 · PRODUCT OUTPUTS" className="evidence-section section">
+      <section id="outputs" data-path="04 · PRODUCT OUTPUTS" className="evidence-section section">
         <div className="container evidence-grid">
           <div className="evidence-image reveal"><img src={evidenceArt} alt="Abstract orbital evidence visualization" /><div className="instrument-readout"><span>RECEIVER TRACE / 03</span><b>Provenance vector stabilized</b><i><em /> <em /> <em /> <em /> <em /></i></div><div className="image-caption"><span>PROVENANCE VECTOR</span><span>RETRIEVAL → VALIDATION → PACKAGE</span></div></div>
           <div className="evidence-content"><p className="eyebrow reveal">WHAT YOUR TEAM RECEIVES</p><h2 className="reveal delay-1">Not chat history.<br /><em>Deliverables you can inspect.</em></h2><p className="evidence-lede reveal delay-1">Every GroundPulse run returns a research brief, claim ledger, cited source trail, and an explicit gap list for the question at hand.</p><div className="label-stack">{labels.map(([name, description, color], index) => <div className={`evidence-label ${color} reveal`} style={{ transitionDelay: `${index * 80}ms` }} key={name}><span className="label-code">{name}</span><p>{description}</p><ChevronRight size={17} /></div>)}</div><button className="text-button reveal" onClick={notifyWorkspace}>Preview a product run <ArrowUpRight size={16} /></button></div>

@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, Github, Radar } from "lucide-react
 import { useRoute } from "wouter";
 import { journalPosts } from "@/lib/journal";
 
-const mark = "/assets/groundpulse-mark.png";
+const mark = "/manus-storage/groundpulse-mark_385613b6.png";
 
 export default function JournalArticle() {
   const [, params] = useRoute("/journal/:slug");

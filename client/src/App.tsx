@@ -10,8 +10,8 @@ import Home from "./pages/Home";
 
 /** Design reminder — Evidence Mission Room: use dark SpaceTech surfaces globally. */
 
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
