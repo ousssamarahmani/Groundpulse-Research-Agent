@@ -15,7 +15,6 @@ from .dashboard_models import (
 from .repository_factory import get_run_repository
 from .storage_factory import get_artifact_storage
 
-
 DEMO_RUN_ID = os.getenv("GROUNDPULSE_DEMO_RUN_ID", "run_p1_55cbb0817ecd").strip()
 
 app = FastAPI(
@@ -50,7 +49,6 @@ def _get_demo_run():
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Demo run is not configured",
         )
-
     run = repository.get(DEMO_RUN_ID)
     if run is None:
         raise HTTPException(
@@ -73,7 +71,10 @@ def demo_list_runs(
     """Expose only the approved fixed demonstration run."""
     if offset > 0 or limit < 1:
         return DashboardRunListResponse(
-            runs=[], limit=limit, offset=offset, returned=0
+            runs=[],
+            limit=limit,
+            offset=offset,
+            returned=0,
         )
     run = _get_demo_run()
     return DashboardRunListResponse(
@@ -101,14 +102,21 @@ def demo_list_artifacts(run_id: str) -> DashboardArtifactListResponse:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Demo run is not available",
         )
-
     _get_demo_run()
     objects = storage.list_objects(f"runs/{DEMO_RUN_ID}")
-    artifacts = [
-        DashboardArtifact.from_object(stored, DEMO_RUN_ID)
-        for stored in objects
-        if stored.object_path.startswith(f"runs/{DEMO_RUN_ID}/")
-    ]
+    artifacts: list[DashboardArtifact] = []
+    for stored in objects:
+        if not stored.object_path.startswith(f"runs/{DEMO_RUN_ID}/"):
+            continue
+        artifact = DashboardArtifact.from_object(stored, DEMO_RUN_ID)
+        artifact = artifact.model_copy(
+            update={
+                "download_url": (
+                    f"/demo/runs/{DEMO_RUN_ID}/artifacts/{artifact.name}"
+                )
+            }
+        )
+        artifacts.append(artifact)
     return DashboardArtifactListResponse(
         run_id=DEMO_RUN_ID,
         artifacts=artifacts,
@@ -123,13 +131,11 @@ def demo_read_artifact(run_id: str, artifact_name: str) -> Response:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Demo run is not available",
         )
-
     if not artifact_name.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Artifact name must not be empty",
         )
-
     _get_demo_run()
     object_path = f"runs/{DEMO_RUN_ID}/{artifact_name}"
     try:
@@ -144,7 +150,6 @@ def demo_read_artifact(run_id: str, artifact_name: str) -> Response:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Artifact not found: {artifact_name}",
         ) from exc
-
     media_type = guess_type(artifact_name)[0] or "application/octet-stream"
     return Response(content=content, media_type=media_type)
 
