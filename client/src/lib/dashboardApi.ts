@@ -40,7 +40,9 @@ export type DashboardArtifactListResponse = {
   returned: number;
 };
 
-const apiBaseUrl = (import.meta.env.VITE_GROUNDPULSE_API_URL ?? "").replace(/\/$/, "");
+const apiBaseUrl = (
+  import.meta.env.VITE_GROUNDPULSE_API_URL ?? ""
+).replace(/\/$/, "");
 
 export class DashboardApiError extends Error {
   status: number;
@@ -55,7 +57,7 @@ export class DashboardApiError extends Error {
 async function requestJson<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     headers: { Accept: "application/json" },
-    credentials: "include",
+    credentials: "omit",
   });
 
   if (!response.ok) {
@@ -77,18 +79,18 @@ export function listDashboardRuns(limit = 20, offset = 0) {
     limit: String(limit),
     offset: String(offset),
   });
-  return requestJson<DashboardRunListResponse>(`/dashboard/runs?${params}`);
+  return requestJson<DashboardRunListResponse>(`/demo/runs?${params}`);
 }
 
 export function getDashboardRun(runId: string) {
   return requestJson<DashboardRunSummary>(
-    `/dashboard/runs/${encodeURIComponent(runId)}`,
+    `/demo/runs/${encodeURIComponent(runId)}`,
   );
 }
 
 export function listDashboardArtifacts(runId: string) {
   return requestJson<DashboardArtifactListResponse>(
-    `/dashboard/runs/${encodeURIComponent(runId)}/artifacts`,
+    `/demo/runs/${encodeURIComponent(runId)}/artifacts`,
   );
 }
 
@@ -97,5 +99,5 @@ export function artifactUrl(runId: string, artifactName: string) {
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/");
-  return `${apiBaseUrl}/dashboard/runs/${encodeURIComponent(runId)}/artifacts/${encodedName}`;
+  return `${apiBaseUrl}/demo/runs/${encodeURIComponent(runId)}/artifacts/${encodedName}`;
 }
