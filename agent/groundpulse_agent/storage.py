@@ -56,3 +56,11 @@ class ArtifactStorage(Protocol):
     ) -> list[StoredObject]:
         """Store every file in a directory beneath an object prefix."""
         ...
+
+    def list_objects(self, prefix: str) -> list[StoredObject]:
+        """List immutable objects below a normalized prefix."""
+        ...
+
+    def read_bytes(self, object_path: str) -> bytes:
+        """Read one immutable object by its normalized path."""
+        ...

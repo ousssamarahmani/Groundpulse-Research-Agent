@@ -90,6 +90,34 @@ class LocalArtifactStorage:
             )
         return stored
 
+    def list_objects(self, prefix: str) -> list[StoredObject]:
+        normalized_prefix = self._normalize_object_path(prefix).rstrip("/")
+        prefix_root = self.root / normalized_prefix
+        if not prefix_root.exists():
+            return []
+
+        objects: list[StoredObject] = []
+        for path in sorted(path for path in prefix_root.rglob("*") if path.is_file()):
+            content = path.read_bytes()
+            object_path = path.relative_to(self.root).as_posix()
+            objects.append(
+                StoredObject(
+                    object_path=object_path,
+                    uri=path.resolve().as_uri(),
+                    sha256=hashlib.sha256(content).hexdigest(),
+                    size_bytes=len(content),
+                    generation=None,
+                )
+            )
+        return objects
+
+    def read_bytes(self, object_path: str) -> bytes:
+        normalized_path = self._normalize_object_path(object_path)
+        path = self.root / normalized_path
+        if not path.exists() or not path.is_file():
+            raise FileNotFoundError(normalized_path)
+        return path.read_bytes()
+
     @staticmethod
     def _normalize_object_path(object_path: str) -> str:
         normalized = object_path.strip().replace("\\", "/").lstrip("/")

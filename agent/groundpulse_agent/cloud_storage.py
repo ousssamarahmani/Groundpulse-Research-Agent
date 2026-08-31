@@ -106,6 +106,41 @@ class CloudStorageArtifactStorage:
             )
         return stored
 
+    def list_objects(self, prefix: str) -> list[StoredObject]:
+        normalized_prefix = self._normalize_object_path(prefix).rstrip("/") + "/"
+        objects: list[StoredObject] = []
+        for blob in self.client.list_blobs(self.bucket_name, prefix=normalized_prefix):
+            if blob.name.endswith("/"):
+                continue
+            if blob.md5_hash and blob.size is not None:
+                digest = (blob.metadata or {}).get("sha256")
+                if not digest:
+                    blob.reload()
+                    digest = (blob.metadata or {}).get("sha256")
+            else:
+                blob.reload()
+                digest = (blob.metadata or {}).get("sha256")
+            objects.append(
+                StoredObject(
+                    object_path=blob.name,
+                    uri=f"gs://{self.bucket_name}/{blob.name}",
+                    sha256=digest or "",
+                    size_bytes=int(blob.size or 0),
+                    generation=str(blob.generation) if blob.generation else None,
+                )
+            )
+        return sorted(objects, key=lambda obj: obj.object_path)
+
+    def read_bytes(self, object_path: str) -> bytes:
+        normalized_path = self._normalize_object_path(object_path)
+        blob = self.bucket.blob(normalized_path)
+        try:
+            return blob.download_as_bytes()
+        except Exception as exc:
+            if getattr(exc, "code", None) == 404:
+                raise FileNotFoundError(normalized_path) from exc
+            raise
+
     @staticmethod
     def _normalize_object_path(object_path: str) -> str:
         normalized = object_path.strip().replace("\\", "/").lstrip("/")

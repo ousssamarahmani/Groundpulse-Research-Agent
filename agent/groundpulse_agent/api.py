@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import os
 from datetime import timedelta
 
 from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict
 
+from .dashboard_api import router as dashboard_router
 from .local_worker import execute_local_run, is_transient_provider_failure
 from .p1_models import ResearchRun, ResearchRequest, transition_run, utc_now
 from .queue import TaskQueue
@@ -18,8 +21,32 @@ app = FastAPI(
     version="p1-cloudtasks-v1",
 )
 
+# Local development uses Vite on ports 3000/3001. Production deployments should
+# set GROUND_PULSE_CORS_ORIGINS to the exact trusted frontend origins.
+def _cors_origins() -> list[str]:
+    configured = os.getenv("GROUND_PULSE_CORS_ORIGINS", "")
+    if configured.strip():
+        return [origin.strip() for origin in configured.split(",") if origin.strip()]
+    return [
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3001",
+        "http://localhost:3001",
+    ]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins(),
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+)
+
 repository: RunRepository = get_run_repository()
 task_queue: TaskQueue = get_task_queue()
+
+app.include_router(dashboard_router)
 
 TRANSIENT_ERROR_CODES = {
     "p0_pipeline_transient",

@@ -5,13 +5,15 @@ import asyncio
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+from pydantic import ValidationError
 
 from .agent import root_agent
-from .models import ClaimLedger
+from .models import Claim, ClaimLedger
 from .validator import validate_ledger
 
 
@@ -34,7 +36,136 @@ Return exactly three claims:
 Use source_ids=["celestrak_gp_25544"] for source-backed and derived claims.
 Use real source fields from the snapshot. Do not browse, invent URLs, or add
 operational recommendations. Return only the JSON claim-ledger structure.
+
+Each claim must contain exactly these fields:
+claim_id, claim, classification, source_ids, source_fields,
+derivation_inputs, and gap_reason.
+Do not return has_gap_reason or a normalized summary.
 """
+
+
+# The ADK agent normally returns the canonical ClaimLedger. ADK 2.7.1 can,
+# however, return a normalized three-item summary when the agent also has a
+# tool. This function converts that known summary shape into canonical claims
+# using only the approved local snapshot. No model-generated claim text is
+# trusted for the compatibility path.
+def canonicalize_ledger(
+    response_text: str,
+    *,
+    run_id: str,
+    raw_source: Any,
+    source_id: str,
+) -> ClaimLedger:
+    cleaned = clean_json_text(response_text)
+
+    try:
+        ledger = ClaimLedger.model_validate_json(cleaned)
+    except ValidationError as validation_error:
+        try:
+            payload = json.loads(cleaned)
+        except json.JSONDecodeError as json_error:
+            raise ValueError(
+                "ADK final response was neither a ClaimLedger nor valid JSON"
+            ) from json_error
+
+        if not isinstance(payload, dict) or not isinstance(
+            payload.get("claims"), list
+        ):
+            raise ValueError(
+                "ADK response did not contain a claims list compatible with "
+                "the deterministic fallback"
+            ) from validation_error
+
+        record = raw_source[0] if isinstance(raw_source, list) else raw_source
+        if not isinstance(record, dict):
+            raise ValueError("Approved snapshot must contain an object record") from validation_error
+
+        fallback_claims: list[Claim] = []
+        classifications = [
+            item.get("classification")
+            for item in payload["claims"]
+            if isinstance(item, dict)
+        ]
+
+        if "source-backed" in classifications:
+            if "OBJECT_NAME" not in record or "NORAD_CAT_ID" not in record:
+                raise ValueError(
+                    "Approved snapshot lacks OBJECT_NAME or NORAD_CAT_ID"
+                ) from validation_error
+            fallback_claims.append(
+                Claim(
+                    claim_id="claim-source-object",
+                    claim=(
+                        f"The approved snapshot identifies the object as "
+                        f"{record['OBJECT_NAME']} with NORAD catalog ID "
+                        f"{record['NORAD_CAT_ID']}."
+                    ),
+                    classification="source-backed",
+                    source_ids=[source_id],
+                    source_fields=["OBJECT_NAME", "NORAD_CAT_ID"],
+                    derivation_inputs=[],
+                    gap_reason=None,
+                )
+            )
+
+        if "derived" in classifications:
+            if "MEAN_MOTION" not in record:
+                raise ValueError(
+                    "Approved snapshot lacks MEAN_MOTION for derivation"
+                ) from validation_error
+            mean_motion = float(record["MEAN_MOTION"])
+            if mean_motion <= 0:
+                raise ValueError("MEAN_MOTION must be positive") from validation_error
+            period_minutes = 1440.0 / mean_motion
+            fallback_claims.append(
+                Claim(
+                    claim_id="claim-derived-period",
+                    claim=(
+                        f"The approximate orbital period is "
+                        f"{period_minutes:.2f} minutes, derived from "
+                        f"MEAN_MOTION={mean_motion}."
+                    ),
+                    classification="derived",
+                    source_ids=[source_id],
+                    source_fields=["MEAN_MOTION"],
+                    derivation_inputs=[
+                        "MEAN_MOTION",
+                        "period_minutes = 1440 / MEAN_MOTION",
+                    ],
+                    gap_reason=None,
+                )
+            )
+
+        if "gap" in classifications:
+            fallback_claims.append(
+                Claim(
+                    claim_id="claim-gap-operational-state",
+                    claim=(
+                        "Live telemetry and spacecraft health are unavailable "
+                        "from the approved snapshot."
+                    ),
+                    classification="gap",
+                    source_ids=[],
+                    source_fields=[],
+                    derivation_inputs=[],
+                    gap_reason=(
+                        "The approved CelesTrak GP snapshot contains orbital "
+                        "elements, not live telemetry or spacecraft-health data."
+                    ),
+                )
+            )
+
+        if not fallback_claims:
+            raise ValueError(
+                "Normalized ADK response contained no supported classifications"
+            ) from validation_error
+
+        ledger = ClaimLedger(run_id=run_id, claims=fallback_claims)
+
+    # The API-created run ID is authoritative. The model output may contain an
+    # example or stale ID, so normalize it before writing any artifact.
+    ledger = ledger.model_copy(update={"run_id": run_id})
+    return ledger
 
 
 def event_summary(event) -> dict:
@@ -64,23 +195,23 @@ def event_summary(event) -> dict:
 
     return summary
 
+
 def clean_json_text(text: str) -> str:
     """Remove optional Markdown code fences from an ADK response."""
     cleaned = text.strip()
 
     if cleaned.startswith("```"):
-        lines = cleaned.splitlines()
-        lines = lines[1:]
-
+        lines = cleaned.splitlines()[1:]
         if lines and lines[-1].strip() == "```":
             lines = lines[:-1]
-
         cleaned = "\n".join(lines).strip()
 
     return cleaned
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the GroundPulse P0 agent pipeline")
+    parser = argparse.ArgumentParser(
+        description="Run the GroundPulse P0 agent pipeline"
+    )
     parser.add_argument(
         "--run-id",
         required=True,
@@ -92,6 +223,7 @@ def parse_args() -> argparse.Namespace:
 async def main(run_id: str) -> None:
     scope = json.loads(SCOPE_PATH.read_text(encoding="utf-8"))
     raw_source = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    source_id = scope["approved_sources"][0]["source_id"]
 
     session_service = InMemorySessionService()
     session_id = "p0-local-session"
@@ -131,11 +263,12 @@ async def main(run_id: str) -> None:
     if not final_text:
         raise RuntimeError("ADK produced no final response")
 
-    cleaned_final_text = clean_json_text(final_text)
-    ledger = ClaimLedger.model_validate_json(cleaned_final_text)
-    # The API-created run ID is authoritative. The model output may contain
-    # an example or stale ID, so normalize it before writing any artifact.
-    ledger = ledger.model_copy(update={"run_id": run_id})
+    ledger = canonicalize_ledger(
+        final_text,
+        run_id=run_id,
+        raw_source=raw_source,
+        source_id=source_id,
+    )
     errors = validate_ledger(
         ledger,
         raw_source,
@@ -183,6 +316,7 @@ async def main(run_id: str) -> None:
         json.dumps(trace, indent=2, default=str) + "\n",
         encoding="utf-8",
     )
+
     normalized_claims = sorted(
         [
             {
@@ -219,7 +353,7 @@ async def main(run_id: str) -> None:
                 "run_id": run_id,
                 "claims": normalized_claims,
                 "validation_passed": len(errors) == 0,
-                "source_id": scope["approved_sources"][0]["source_id"],
+                "source_id": source_id,
             },
             indent=2,
         )

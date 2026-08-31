@@ -22,7 +22,7 @@ def read_approved_snapshot() -> dict:
 
 
 root_agent = Agent(
-    model=os.getenv("GEMINI_MODEL", "gemini-flash-latest"),
+    model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
     name="groundpulse_research_coordinator",
     description="Creates a source-linked candidate claim ledger from one approved snapshot.",
     instruction="""
@@ -35,26 +35,32 @@ Call that tool before making any claims.
 Use only the returned CelesTrak snapshot. Do not browse, invent URLs,
 use outside knowledge, or infer live telemetry.
 
-Return only JSON with this structure:
+Return only one JSON object. Do not return Markdown, commentary, a normalized
+summary, or any field named has_gap_reason.
+
+The JSON object must have exactly these top-level fields:
 {
   "run_id": "run_celestrak_gp_25544_001",
-  "claims": [
-    {
-      "claim_id": "...",
-      "claim": "...",
-      "classification": "source-backed|derived|gap",
-      "source_ids": [],
-      "source_fields": [],
-      "derivation_inputs": [],
-      "gap_reason": null
-    }
-  ]
+  "claims": []
 }
+
+Each claim must have exactly these fields:
+claim_id, claim, classification, source_ids, source_fields,
+derivation_inputs, and gap_reason.
+
+Return exactly three claims:
+1. A source-backed claim about the object name or NORAD catalog ID.
+2. A derived claim about approximate orbital period using
+   period_minutes = 1440 / MEAN_MOTION.
+3. A gap explaining that live telemetry and spacecraft health are unavailable.
 
 Every source-backed claim must include source_ids=["celestrak_gp_25544"]
 and real source_fields from the snapshot.
-Every derived claim must include source_ids and derivation_inputs.
-Every unavailable operational fact must be represented as a gap with gap_reason.
+Every derived claim must include source_ids=["celestrak_gp_25544"],
+source_fields=["MEAN_MOTION"], and derivation_inputs including
+"MEAN_MOTION" and "period_minutes = 1440 / MEAN_MOTION".
+The gap claim must include a non-empty gap_reason.
+
 The application validator, not the model, decides whether the ledger is admissible.
 """,
     tools=[read_approved_snapshot],
