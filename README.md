@@ -1,151 +1,200 @@
 # GroundPulse Research Agent
 
-> **An evidence-first, event-driven research coordinator for satellite and ground-segment questions.**
+> **An evidence-first research agent for satellite and ground-segment questions.**
 
-[![Track](https://img.shields.io/badge/Track-Taskmaster-171717?style=flat-square)](docs/TASKMASTER_TRACK.md)
-[![Hackathon](https://img.shields.io/badge/All%20Things%20Agentic%20Hackathon-2026-4285F4?style=flat-square)](https://allthingsagentichackathon.devpost.com/)
-[![Prototype](https://img.shields.io/badge/Status-Prototype%20UI-5b38a9?style=flat-square)](docs/LIMITATIONS.md)
-[![GCP](https://img.shields.io/badge/Target-Google%20Cloud-4285F4?style=flat-square)](docs/GCP_REALTIME_INTEGRATION_PLAN.md)
-[![License](https://img.shields.io/badge/License-MIT-eaeaea?style=flat-square)](LICENSE)
+GroundPulse turns a bounded research question into a reviewable evidence package. It preserves the approved source snapshot, separates source-backed claims from deterministic derivations, records unavailable evidence explicitly, validates the claim ledger, and stores immutable package artifacts for review.
 
-GroundPulse Research Agent is a hackathon-ready product prototype and implementation blueprint. It turns a structured space-data research question into a controlled evidence workflow: discover approved sources, validate fitness and provenance, preserve gaps, and prepare a reviewable research package. The intended output is not free-form text; it is a **Research Evidence Package** comprising a brief, claim ledger, source trail, JSON manifest, and explicit limitations.
+## Judge-facing application
 
-**Hackathon:** [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/) · **Selected track:** [Taskmaster](docs/TASKMASTER_TRACK.md) · **Submission checklist:** [review here](docs/ALL_THINGS_AGENTIC_HACKATHON.md)
+Open the visual React Mission Control dashboard here:
 
-![GroundPulse Research Agent product preview](assets/previews/groundpulse-landing-page.png)
+**[GroundPulse Mission Control](https://groundpulse-frontend-1081077557421.europe-west3.run.app/dashboard)**
 
-> **Honest status:** The landing page, Mission Control dashboard, Research Journal, documentation, task system, and product assets are implemented in this repository. The event triggers, GCP services, external adapters, live telemetry, and released research packages below are target implementation work. They are **not** claimed as live capabilities.
+The public dashboard is configured against a separate read-only demo API. No login, Google identity token, API key, or service-account credential is required.
 
-> **Hackathon readiness boundary:** The official event requires Gemini 3.5 or newer, at least one Google Agent Framework, and at least one Google Cloud infrastructure service. This repository documents the implementation path, but it must not be submitted as satisfying those runtime requirements until they are actually built and demonstrated. [1]
-
-## Why this is a Taskmaster project
-
-The Taskmaster focus is an event-driven system that observes a change, determines the next permitted work, coordinates tools, and delivers a result with appropriate review boundaries. GroundPulse applies that model to research operations: a user request or approved event starts a durable run; the coordinator routes controlled source and validation tasks; the evidence gate either releases a traceable package or creates a visible human-review task.
-
-![Target Taskmaster and GCP workflow](assets/diagrams/taskmaster-gcp-flow.png)
-
-| Taskmaster capability | GroundPulse response | Prototype vs. target |
+| Public surface | URL | Purpose |
 |---|---|---|
-| **Trigger** | Structured research request, source-freshness change, or approved partner event. | UI request flow is implemented locally; external triggers are planned. |
-| **Autonomous routing** | Select discovery, validation, freshness, or package tasks based on scope and source policy. | Operating model and task contracts are documented; worker routing is planned. |
-| **Tool action** | Approved adapters preserve source snapshots and metadata before findings are considered. | Adapter contracts are planned. |
-| **End-to-end artifact** | Research Brief PDF, Claim Ledger, JSON Manifest, and Gap List. | Artifact contract is documented; generation is planned. |
-| **Human boundary** | Unsupported, unavailable, or consequential findings remain visible and require review. | Product rule and UI pattern are implemented/documented. |
+| React Mission Control | [Open dashboard](https://groundpulse-frontend-1081077557421.europe-west3.run.app/dashboard) | Visual judge-facing interface |
+| Demo run archive | [Open runs](https://groundpulse-demo-api-1081077557421.europe-west3.run.app/demo/runs) | Lists the approved demonstration run |
+| Run details | [Open run](https://groundpulse-demo-api-1081077557421.europe-west3.run.app/demo/runs/run_p1_55cbb0817ecd) | Shows status, validation, source, and package metadata |
+| Artifact inventory | [Open artifacts](https://groundpulse-demo-api-1081077557421.europe-west3.run.app/demo/runs/run_p1_55cbb0817ecd/artifacts) | Lists immutable package objects and hashes |
+| Research brief | [Open brief](https://groundpulse-demo-api-1081077557421.europe-west3.run.app/demo/runs/run_p1_55cbb0817ecd/artifacts/artifact/brief.md) | Opens the released Markdown brief |
 
-Read the complete [Taskmaster track alignment](docs/TASKMASTER_TRACK.md) and [Taskmaster operating model](docs/TASKMASTER_OPERATING_MODEL.md).
+The bare demo API root intentionally returns `404`; use the documented `/demo/...` endpoints above.
 
-## Product surfaces included now
+## Verified demonstration run
 
-| Surface | Route | Current repository state |
-|---|---|---|
-| **Product landing page** | `/` | Implemented static frontend explaining the workflow and use cases. |
-| **Mission Control dashboard** | `/dashboard` | Implemented local interactive prototype; all values are illustrative UI content. |
-| **Research Journal** | `/journal/claim-ledger` | Implemented editorial and methodology pages. |
-| **New research panel** | Dashboard modal | Implemented local interaction only; it does not create a cloud job. |
-| **GCP architecture** | Documentation and diagram | Target implementation only; no cloud resources are provisioned here. |
+The public demo presents a completed ISS evidence assessment based on one approved CelesTrak GP snapshot.
 
-## Live UI prototype
-
-The current UI/UX prototype is externally accessible for hackathon review. These links expose the implemented frontend only; their dashboard values remain local prototype content, not a live agent or telemetry feed.
-
-| Surface | External URL |
+| Field | Verified value |
 |---|---|
-| **Product landing page** | [groundpulse-utlcmcmd.manus.space](https://groundpulse-utlcmcmd.manus.space) |
-| **Mission Control dashboard** | [groundpulse-utlcmcmd.manus.space/dashboard](https://groundpulse-utlcmcmd.manus.space/dashboard) |
+| Run ID | `run_p1_55cbb0817ecd` |
+| Object | ISS |
+| NORAD catalog ID | `25544` |
+| Question | Given one approved CelesTrak GP snapshot for the ISS, what is source-backed and what is unavailable? |
+| Approved source | `celestrak_gp_25544` |
+| Run status | `released` |
+| Validation state | `passed` |
+| Attempt count | `1` |
+| Artifact package ID | `20260827T110302Z` |
+| Error | None |
 
-## Target GCP architecture
+The released package includes a research brief, candidate claim ledger, gap list, normalized result, source snapshot, validation report, request record, package manifest, redacted ADK trace, and immutable manifest metadata.
 
-The target deployment separates public-facing request intake, durable task dispatch, agent workers, approved source adapters, evidence validation, and immutable artifacts. Cloud Run is the target for request-facing services and agent workers; Cloud Tasks is the target queue for asynchronous work; Cloud Storage holds raw snapshots and released artifacts; Pub/Sub supports approved event distribution; BigQuery or Dataflow is added only when streaming analytics requires it. See the detailed [GCP Real-Time Integration Plan](docs/GCP_REALTIME_INTEGRATION_PLAN.md) and [Architecture](docs/ARCHITECTURE.md).
+## What the system does
 
-```mermaid
-flowchart LR
-  U[Request or approved event] --> I[Cloud Run intake]
-  I --> Q[Cloud Tasks]
-  Q --> W[Agent worker]
-  W --> A[Approved adapters]
-  A --> S[(Cloud Storage snapshots)]
-  S --> V[Evidence validator]
-  V --> P[Research package]
-  P --> D[Dashboard and artifact delivery]
-  I -. approved event path .-> B{{Pub/Sub}}
-  B -. analytics when needed .-> X[(BigQuery / Dataflow)]
+GroundPulse follows an evidence-first workflow:
+
+```text
+Bounded research question
+        |
+        v
+Request and run model
+        |
+        v
+Approved source snapshot
+        |
+        v
+Claim ledger and provenance validation
+        |
+        v
+Explicit gaps and review boundary
+        |
+        v
+Immutable research package in private Cloud Storage
+        |
+        v
+Read-only dashboard and artifact delivery
 ```
 
-### Architecture constraints
+The system is designed so that generated language cannot silently exceed the evidence. A claim may be source-backed, deterministically derived from recorded fields, or marked as an evidence gap. Unsupported operational conclusions remain unavailable and visible.
 
-GroundPulse must expose freshness instead of assuming it. Public-source context is labeled *near-real-time* only when the provider cadence and retrieval timestamps support that label. **Live operational telemetry** is reserved for an owned or contracted feed with a documented schema, authorization, retention policy, and end-to-end test. Details and source-specific boundaries are in the [GCP plan](docs/GCP_REALTIME_INTEGRATION_PLAN.md).
+## Current architecture
 
-## Implementation plan and tasks
+The deployed system is separated into private research infrastructure and a public demonstration boundary.
 
-The project is intentionally organized as a transparent progression from prototype to verified MVP. Every target task is written with an acceptance condition and a non-claim boundary.
-
-| Milestone | Main work | Representative tasks | State |
-|---|---|---|---|
-| **P0 — Foundation** | Interface, documentation, scope control, CI. | `GP-001`–`GP-003` | Complete prototype work. |
-| **P1 — Run model** | Request schema, run ID, event contract, durable states. | `GP-010`, `GP-015` | Planned. |
-| **P2 — Source controls** | Adapter registry, retrieval policy, snapshots, manifests. | `GP-011`, `GP-012`, `GP-016` | Planned. |
-| **P3 — Evidence gate** | Claim ledger, validation, gaps, human review. | `GP-013`, `GP-014`, `GP-017` | Planned. |
-| **P4 — Research package** | PDF, JSON manifest, citations, checksums, access control. | `GP-020`–`GP-022` | Planned. |
-| **P5 — GCP and event routing** | IaC, Cloud Run, Cloud Tasks, Pub/Sub, freshness analytics. | `GP-030`–`GP-034` | Planned target. |
-
-The [Implementation Plan](docs/IMPLEMENTATION_PLAN.md) explains milestone gates. The [Task Backlog](docs/TASKS.md) is the source of truth for work items. For each new issue, use the [Taskmaster work-item template](.github/ISSUE_TEMPLATE/taskmaster-work-item.md): it requires a trigger, allowed tools, output artifact, human-review boundary, acceptance evidence, and non-claims.
-
-## Intended use case
-
-The first narrow use case is **evidence preparation for satellite and ground-segment research**. A team frames an object, location, time window, source constraint, and decision intent. GroundPulse is designed to reduce repetitive discovery, validation, documentation, and reporting work while preserving the evidence needed for a specialist to review the output.
-
-| Input | GroundPulse responsibility | Human specialist responsibility |
+| Component | Deployment boundary | Responsibility |
 |---|---|---|
-| Structured question, location/object, time window, decision intent | Create bounded work, preserve provenance, report gaps, and prepare package artifacts. | Set the question and assess the outcome in operational context. |
-| Public orbit, observation, or weather context | Preserve source identity, timestamps, terms, and derivation inputs. | Decide suitability for mission, safety, performance, or operational action. |
-| Partner telemetry | Accept only after contract, schema, authorization, and validation controls. | Own the feed and retain final operational authority. |
+| React frontend | Public Cloud Run service `groundpulse-frontend` | Displays Mission Control and calls only the public demo API |
+| Demo API facade | Public Cloud Run service `groundpulse-demo-api` | Exposes only the fixed released run and read-only artifact routes |
+| Research API | Private Cloud Run service `groundpulse-research-api` | Handles research submission, worker execution, persistence, and dashboard data |
+| Run persistence | Private Firestore collection | Stores run state, validation metadata, and execution information |
+| Artifact storage | Private Google Cloud Storage bucket | Stores immutable evidence and package objects |
+| Runtime identity | Restricted service accounts | Separates public read-only access from private research operations |
 
-## Quick start
+The public facade proxies approved artifact bytes through controlled routes. The frontend never receives bucket credentials, service-account JSON, Google identity tokens, or direct private bucket access.
 
-**Prerequisites:** Node.js 20+, pnpm, and Git.
+## Evidence package
 
-```bash
+The released package demonstrates three evidence categories.
+
+| Category | Example | Meaning |
+|---|---|---|
+| Supported | Approved CelesTrak source snapshot | Directly present in the approved evidence |
+| Derived | Approximate orbital period of 92.93 minutes | Deterministically calculated from recorded `MEAN_MOTION` |
+| Gap | Live telemetry and spacecraft health | Not available in the approved GP snapshot and therefore not claimed |
+
+The research brief explicitly states that the package does not provide live telemetry, spacecraft-health assessment, or an operational recommendation.
+
+## Public demo boundary
+
+The judge-facing deployment is intentionally **read-only**. The **New research** panel is a product-surface prototype and does not submit an anonymous cloud job. The public facade does not expose `POST /runs`, queue submission, worker controls, or private research endpoints.
+
+This boundary protects the private pipeline and prevents unauthenticated visitors from creating arbitrary jobs. To demonstrate a new research run, use the authenticated private development or operator workflow rather than the public judge URL.
+
+## Local development
+
+### Prerequisites
+
+Install Node.js 20 or newer, pnpm, Python 3.11 or newer, and Git. Google Cloud commands additionally require the Google Cloud CLI and an authenticated development account.
+
+### Frontend
+
+```powershell
 git clone https://github.com/ousssamarahmani/Groundpulse-Research-Agent.git
-cd Groundpulse-Research-Agent
+Set-Location .\Groundpulse-Research-Agent
 pnpm install
+
+@"
+VITE_GROUNDPULSE_API_URL=https://groundpulse-demo-api-1081077557421.europe-west3.run.app
+"@ | Set-Content .\.env.local -Encoding utf8
+
+pnpm exec tsc --noEmit
 pnpm dev
 ```
 
-Open the Vite URL shown in the terminal. The available frontend routes are `/`, `/dashboard`, and `/journal/claim-ledger`.
+Open the Vite URL shown in the terminal and navigate to `/dashboard`.
 
-```bash
-pnpm check
-pnpm build
+### Private Python API
+
+```powershell
+Set-Location .\Groundpulse-Research-Agent
+
+$env:GROUND_PULSE_STORAGE = "firestore"
+$env:GROUND_PULSE_ARTIFACT_STORAGE = "gcs"
+$env:GROUND_PULSE_ARTIFACT_BUCKET = "groundpulse-artifacts-gen-lang-client-0100610229"
+$env:GOOGLE_CLOUD_PROJECT = "gen-lang-client-0100610229"
+$env:GROUND_PULSE_QUEUE = "local"
+
+.\agent\.venv\Scripts\python.exe -m uvicorn `
+    agent.groundpulse_agent.api:app `
+    --host 127.0.0.1 `
+    --port 8000
 ```
 
-## Documentation index
+The private API requires the appropriate local Google credentials for Firestore and Cloud Storage. Never commit `.env` files, service-account keys, identity tokens, or API secrets.
 
-| Document | Purpose |
+### Verification commands
+
+```powershell
+pnpm exec tsc --noEmit
+pnpm build
+
+Set-Location .\agent
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+## Deployment notes
+
+The frontend is built from the repository root and served by the Node/Express production server. Its public API base URL is injected at build time using:
+
+```text
+VITE_GROUNDPULSE_API_URL=https://groundpulse-demo-api-1081077557421.europe-west3.run.app
+```
+
+The public demo API is deployed separately from `.\agent` and uses the restricted `groundpulse-demo-reader` identity. The private research API must not be made publicly invokable merely to support the frontend.
+
+## Repository guide
+
+| Path | Purpose |
 |---|---|
-| [Taskmaster track alignment](docs/TASKMASTER_TRACK.md) | Explains the event-driven track fit and proof boundaries. |
-| [Taskmaster operating model](docs/TASKMASTER_OPERATING_MODEL.md) | Defines triggers, routing, evidence gates, human review, and issue discipline. |
-| [Technical Architecture Guide (DOCX)](docs/GroundPulse_Technical_Architecture_Guide_EN.docx) | Imported technical architecture reference, preserved unchanged from the supplied project documentation. |
-| [All Things Agentic Hackathon Readiness](docs/ALL_THINGS_AGENTIC_HACKATHON.md) | Event name, Taskmaster selection, and truthful submission readiness checklist. |
-| [Architecture](docs/ARCHITECTURE.md) | Defines product components and target service boundaries. |
-| [GCP real-time integration plan](docs/GCP_REALTIME_INTEGRATION_PLAN.md) | Detailed GCP target design, event contract, safety, cost, and rollout. |
-| [Implementation plan](docs/IMPLEMENTATION_PLAN.md) | Milestones and release gates from prototype to verified MVP. |
-| [Task backlog](docs/TASKS.md) | Acceptance-oriented IDs, status, and delivery work. |
-| [Hackathon submission](docs/HACKATHON_SUBMISSION.md) | Problem, solution, demo story, and honest current scope. |
-| [Demo guide](docs/DEMO.md) | A safe presentation script for the implemented prototype. |
-| [Limitations](docs/LIMITATIONS.md) | Explicit technical, data, and operational non-claims. |
+| `client/src/pages/Dashboard.tsx` | React Mission Control page |
+| `client/src/lib/dashboardApi.ts` | Public demo API client used by the deployed frontend |
+| `agent/groundpulse_agent/api.py` | Private research API |
+| `agent/groundpulse_agent/demo_api.py` | Public read-only demo facade |
+| `agent/groundpulse_agent/` | Run model, repositories, storage, queue, and artifact generation |
+| `agent/tests/` | Backend and persistence tests |
+| `docs/PROJECT_STATUS.md` | Verified implementation status |
+| `docs/P2_DASHBOARD_MILESTONE.md` | Dashboard milestone evidence |
+| `docs/P2_DEMO_SCRIPT.md` | Recording walkthrough |
+| `docs/ALL_THINGS_AGENTIC_HACKATHON.md` | Hackathon readiness and submission notes |
 
-## Principles
+## Design principles
 
-GroundPulse follows four non-negotiable principles. **Evidence before language** means no generated statement is stronger than its evidence. **Provenance before aggregation** means source identity and transformation history are retained. **Missing means missing** means unavailable data remains visible rather than silently imputed. **Human review before operational decision** means GroundPulse accelerates specialist work but never assumes the authority of an engineering or operations team.
+**Evidence before language** means no statement is stronger than its evidence. **Provenance before aggregation** means source identity, timestamps, and derivation inputs are retained. **Missing means missing** means unavailable information is disclosed rather than silently invented. **Human review before operational decision** means GroundPulse supports specialist review and does not replace engineering or mission authority.
 
-## Contributing and security
+## Limitations and honest scope
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md), select an item from [docs/TASKS.md](docs/TASKS.md), and review [SECURITY.md](SECURITY.md) before opening an issue or pull request. Contributions must preserve prototype boundaries and evidence quality.
+The verified demonstration is narrow: one ISS object, one approved CelesTrak GP snapshot, and one released evidence package. CelesTrak GP data provides orbital elements, not live spacecraft telemetry, spacecraft health, mission status, or operational recommendations. The public deployment is a read-only showcase of the verified run; anonymous research submission is intentionally disabled.
+
+## Security
+
+Do not commit Google credentials, service-account JSON, identity tokens, private bucket URLs, API keys, or local `.env` files. The private research service and private artifact bucket must remain protected. Public access is provided only through the restricted read-only facade.
 
 ## License
 
-This repository is released under the [MIT License](LICENSE). External source data, when later integrated, retains its own license, terms, attribution, and permitted-use boundaries.
+This repository is released under the MIT License. External source data remains subject to its own license, terms, attribution, and permitted-use boundaries.
 
-## References
+## Hackathon
 
-[1]: [All Things Agentic Hackathon — Devpost](https://allthingsagentichackathon.devpost.com/)
+GroundPulse is prepared for the All Things Agentic Hackathon under the Taskmaster track. The public demo provides a verifiable visual experience backed by a deployed Google Cloud research pipeline, with explicit evidence, provenance, artifact, and human-review boundaries.
